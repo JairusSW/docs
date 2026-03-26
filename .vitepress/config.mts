@@ -4,6 +4,7 @@ export default defineConfig({
   title: "Jairus' Docs",
   description: "Documentation for json-as, as-test, try-as, and wipc",
   lang: "en-US",
+  appearance: "dark",
   base: "/",
   cleanUrls: true,
   head: [["link", { rel: "icon", type: "image/png", href: "/logo.png" }]],

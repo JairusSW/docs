@@ -11,6 +11,7 @@ export default defineConfig({
     logo: "/logo.png",
     nav: [
       { text: "Home", link: "/" },
+      { text: "Blog", link: "https://blog.jairus.dev" },
       {
         text: "Projects",
         items: [

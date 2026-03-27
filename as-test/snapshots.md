@@ -16,14 +16,16 @@ Useful commands:
 
 ```bash
 ast test
-ast test --update-snapshots
+ast test --create-snapshots
+ast test --overwrite-snapshots
 ast test --no-snapshot
 ```
 
 Behavior:
 
 - snapshots are stored in the configured snapshot directory
-- `--update-snapshots` writes new or changed values
+- `--create-snapshots` writes missing values only
+- `--overwrite-snapshots` replaces existing snapshot values on mismatch
 - `--no-snapshot` disables snapshot assertions for the run
 
 See also:

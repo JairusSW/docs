@@ -24,6 +24,7 @@ Important fields:
 - `input`: spec file globs
 - `output`: root output directory, or an object with explicit output paths
 - `env`: environment variables passed to build and runtime processes
+- `coverage`: disabled by default; can be `true`/`false` or an object with `enabled`, `include`, and `exclude`
 - `buildOptions.target`: `wasi`, `bindings`, or `web`
 - `buildOptions.cmd`: optional custom build command template
 - `runOptions.runtime.cmd`: runtime command template
@@ -60,3 +61,9 @@ Validation behavior:
 - unknown keys fail validation
 - invalid types fail validation
 - `ast doctor` is the fastest way to check config issues
+
+Parallel execution:
+
+- `ast test --parallel` picks a moderate worker count automatically
+- `--jobs <n>` forces an explicit file-worker count
+- `--build-jobs <n>` and `--run-jobs <n>` let you tune build and run concurrency separately

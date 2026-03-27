@@ -24,6 +24,7 @@ Commands:
 ```bash
 ast fuzz
 ast fuzz math --runs 10000 --seed 42
+ast fuzz --parallel
 ast test --fuzz
 ast test --fuzz --fuzz-runs 10000 --fuzz-seed 42
 ```
@@ -64,8 +65,9 @@ Notes:
 
 - fuzzers are registered separately from tests
 - `ast test` does not run fuzzers unless `--fuzz` is set
-- `ast fuzz` always builds fuzz targets as `bindings`
+- `ast fuzz` builds fuzz targets as `bindings` and runs them across the selected modes
 - failures are reported in a fuzz summary, not in normal test counts
+- parallel fuzz runs schedule one file per worker and keep modes for that file sequential
 - generator callback parameters currently need explicit type annotations in AssemblyScript
 
 Related guides:

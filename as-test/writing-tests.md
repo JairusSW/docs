@@ -21,7 +21,10 @@ Useful APIs:
 - `describe(name, callback)`
 - `test(name, callback)`
 - `it(name, callback)`
+- `only(name, callback)` for a focused test
+- `todo(name)` for a placeholder
 - `xdescribe`, `xtest`, `xit` for skipped cases
+- `xonly(name, callback)` for a skipped focused-test placeholder
 - `beforeAll`, `afterAll`, `beforeEach`, `afterEach`
 - `expect(value, message?)`
 
@@ -29,6 +32,7 @@ Run tests:
 
 ```bash
 ast test
+ast test --parallel
 ast test math
 ast test ./assembly/__tests__/*.spec.ts
 ```

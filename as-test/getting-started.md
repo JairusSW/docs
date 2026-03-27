@@ -9,13 +9,19 @@ npm install --save-dev as-test
 Initialize the project structure:
 
 ```bash
-npx as-test init --dir .
+npx ast init --dir .
 ```
 
 Run the default test suite:
 
 ```bash
 ast test
+```
+
+Run through the automatic worker pool when you want faster file-level scheduling:
+
+```bash
+ast test --parallel
 ```
 
 Typical layout:

@@ -15,6 +15,7 @@ Examples:
 ast test
 ast test math,array
 ast test --list
+ast test --parallel
 ast fuzz
 ast fuzz parser --runs 5000 --seed 42
 ast doctor
@@ -33,17 +34,26 @@ Common flags:
 
 Test-specific:
 
-- `--update-snapshots`
+- `--create-snapshots`
+- `--overwrite-snapshots`
 - `--no-snapshot`
 - `--show-coverage`
 - `--fuzz`
 - `--fuzz-runs <n>`
 - `--fuzz-seed <n>`
+- `--parallel`
+- `--jobs <n>`
+- `--build-jobs <n>`
+- `--run-jobs <n>`
 
 Fuzz-specific:
 
 - `--runs <n>`
 - `--seed <n>`
+- `--parallel`
+- `--jobs <n>`
+- `--build-jobs <n>`
+- `--run-jobs <n>`
 
 Selector rules:
 

@@ -1,17 +1,30 @@
-# Setup Diagnostics
+# Doctor
 
-Use `ast doctor` to validate local setup before running tests.
+Use `ast doctor` when setup feels wrong before you start debugging tests themselves.
 
 ```bash
 ast doctor
 ast doctor --config ./as-test.config.json
+ast doctor --mode wasi,bindings
 ```
 
-`ast doctor` is useful for:
+## What It Checks
 
-- invalid config shape
-- missing runtime scripts
-- unresolved runner commands
-- target-specific setup issues
+- config validation
+- discovered spec files
+- dependency availability
+- runtime command shape
+- runner existence for default runtime paths
+- mode-specific setup problems
 
-When config validation fails, `ast doctor` is the quickest way to surface the exact path and expected type.
+## When To Reach For It
+
+Use `ast doctor` when you see:
+
+- config parse errors
+- no files discovered
+- bad runtime commands
+- missing generated runner scripts
+- target-specific setup mismatches
+
+It is the quickest way to get a path-specific validation error instead of guessing which field is wrong.

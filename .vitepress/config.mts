@@ -94,10 +94,95 @@ export default defineConfig({
             { text: "Overview", link: "/as-test/" },
             { text: "Getting Started", link: "/as-test/getting-started" },
             { text: "Writing Tests", link: "/as-test/writing-tests" },
-            { text: "Assertions", link: "/as-test/assertions" },
+            {
+              text: "Assertions",
+              collapsed: false,
+              items: [
+                { text: "Overview", link: "/as-test/assertions/" },
+                {
+                  text: "Equality Matchers",
+                  link: "/as-test/assertions/equality",
+                },
+                {
+                  text: "Number Matchers",
+                  link: "/as-test/assertions/numbers",
+                },
+                {
+                  text: "Types And Truthiness",
+                  link: "/as-test/assertions/types-and-truthiness",
+                },
+                {
+                  text: "Strings And Collections",
+                  link: "/as-test/assertions/strings-and-collections",
+                },
+                {
+                  text: "Snapshots And Throws",
+                  link: "/as-test/assertions/snapshots-and-throws",
+                },
+              ],
+            },
             { text: "Snapshots", link: "/as-test/snapshots" },
-            { text: "Mocking", link: "/as-test/mocking" },
-            { text: "Fuzzing", link: "/as-test/fuzzing" },
+            {
+              text: "Mocking",
+              collapsed: false,
+              items: [
+                { text: "Overview", link: "/as-test/mocking/" },
+                {
+                  text: "Function Mocks",
+                  link: "/as-test/mocking/function-mocks",
+                },
+                {
+                  text: "Import Mocks",
+                  link: "/as-test/mocking/import-mocks",
+                },
+                {
+                  text: "Stable Values",
+                  link: "/as-test/mocking/stable-values",
+                },
+              ],
+            },
+            {
+              text: "Fuzzing",
+              collapsed: false,
+              items: [
+                { text: "Overview", link: "/as-test/fuzzing/" },
+                {
+                  text: "Running Fuzzers",
+                  link: "/as-test/fuzzing/running-fuzzers",
+                },
+                {
+                  text: "Seed Generators",
+                  link: "/as-test/fuzzing/seed-generators",
+                },
+                {
+                  text: "Failure Reproduction",
+                  link: "/as-test/fuzzing/failure-reproduction",
+                },
+              ],
+            },
+            {
+              text: "Examples",
+              collapsed: false,
+              items: [
+                { text: "Overview", link: "/as-test/examples/" },
+                {
+                  text: "Minimal Spec",
+                  link: "/as-test/examples/minimal-spec",
+                },
+                {
+                  text: "Snapshots And Mocks",
+                  link: "/as-test/examples/snapshots-and-mocks",
+                },
+                {
+                  text: "Fuzzing Patterns",
+                  link: "/as-test/examples/fuzzing-patterns",
+                },
+                {
+                  text: "Multi-Mode Config",
+                  link: "/as-test/examples/multi-mode-config",
+                },
+              ],
+            },
             { text: "Coverage", link: "/as-test/coverage" },
             { text: "Reporters", link: "/as-test/reporters" },
             { text: "Doctor", link: "/as-test/doctor" },

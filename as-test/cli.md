@@ -1,6 +1,6 @@
-# CLI Guide
+# CLI
 
-Main commands:
+## Main Commands
 
 - `ast init`
 - `ast build`
@@ -9,54 +9,95 @@ Main commands:
 - `ast fuzz`
 - `ast doctor`
 
-Examples:
+## Common Examples
 
 ```bash
 ast test
 ast test math,array
-ast test --list
 ast test --parallel
+ast test --mode wasi,bindings
+ast test --list
+
 ast fuzz
 ast fuzz parser --runs 5000 --seed 42
+
 ast doctor
 ```
 
-Common flags:
+## Shared Flags
 
 - `--config <path>`
 - `--mode <name[,name...]>`
 - `--list`
 - `--list-modes`
-- `--verbose`
-- `--clean`
-- `--enable <feature>`
-- `--disable <feature>`
+- `--help`
 
-Test-specific:
+## `ast test`
 
+Important flags:
+
+- `--browser <name|path>`
+- `--parallel`
+- `--jobs <n>`
+- `--build-jobs <n>`
+- `--run-jobs <n>`
 - `--create-snapshots`
 - `--overwrite-snapshots`
 - `--no-snapshot`
 - `--show-coverage`
+- `--enable <feature>`
+- `--disable <feature>`
 - `--fuzz`
 - `--fuzz-runs <n>`
 - `--fuzz-seed <n>`
-- `--parallel`
-- `--jobs <n>`
-- `--build-jobs <n>`
-- `--run-jobs <n>`
+- `--reporter <name|path>`
+- `--tap`
+- `--verbose`
+- `--clean`
 
-Fuzz-specific:
+## `ast fuzz`
+
+Important flags:
 
 - `--runs <n>`
 - `--seed <n>`
-- `--parallel`
 - `--jobs <n>`
 - `--build-jobs <n>`
 - `--run-jobs <n>`
 
-Selector rules:
+Unlike `ast test`, `ast fuzz` does not currently expose a `--parallel` shortcut flag. Use the job flags directly.
 
-- bare names resolve against configured input directories
-- explicit file paths and globs are accepted
-- comma-separated bare names are expanded, for example `ast test math,array,string`
+## `ast init`
+
+Useful flags:
+
+- `--dir <path>`
+- `--target wasi|bindings|web`
+- `--example minimal|full|none`
+- `--fuzz-example`
+- `--no-fuzz-example`
+- `--install`
+- `--yes`
+- `--force`
+
+## Selectors
+
+Selectors can be:
+
+- bare names resolved against configured input globs
+- explicit file paths
+- explicit globs
+- comma-separated bare names such as `ast test math,array,string`
+
+## Web Modes
+
+For web targets, use `--browser <name|path>` or configure `runOptions.runtime.browser`.
+
+Named browser values can be:
+
+- `chrome`
+- `chromium`
+- `firefox`
+- `webkit`
+
+If no suitable browser is available, `as-test` can fall back to a Playwright-managed installation path.

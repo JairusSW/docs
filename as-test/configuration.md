@@ -1,8 +1,10 @@
 # Configuration
 
-Main config file: `as-test.config.json`
+The config file is `as-test.config.json`.
 
-Minimal example:
+The schema file in this repo is `as-test.config.schema.json`.
+
+## Minimal Example
 
 ```json
 {
@@ -13,57 +15,170 @@ Minimal example:
   },
   "runOptions": {
     "runtime": {
-      "cmd": "node .as-test/runners/default.wasi.js <file>"
+      "cmd": "node ./.as-test/runners/default.wasi.js <file>"
     }
   }
 }
 ```
 
-Important fields:
+## Top-Level Fields
 
-- `input`: spec file globs
-- `output`: root output directory, or an object with explicit output paths
-- `env`: environment variables passed to build and runtime processes
-- `coverage`: disabled by default; can be `true`/`false` or an object with `enabled`, `include`, and `exclude`
-- `buildOptions.target`: `wasi`, `bindings`, or `web`
-- `buildOptions.cmd`: optional custom build command template
-- `runOptions.runtime.cmd`: runtime command template
-- `runOptions.reporter`: reporter selection
-- `modes`: named mode overrides selected with `--mode`
+Common top-level fields:
 
-Fuzz config:
+- `input`
+- `output`
+- `outDir`
+- `logs`
+- `coverageDir`
+- `snapshotDir`
+- `coverage`
+- `env`
+- `buildOptions`
+- `runOptions`
+- `fuzz`
+- `modes`
+
+## Output Paths
+
+You can use the older individual path fields, or the newer `output` alias.
+
+String form:
 
 ```json
 {
-  "fuzz": {
-    "input": ["assembly/__fuzz__/*.fuzz.ts"],
-    "runs": 1000,
-    "seed": 1337,
-    "target": "bindings",
-    "corpusDir": ".as-test/fuzz/corpus",
-    "crashDir": ".as-test/crashes"
+  "output": ".as-test/"
+}
+```
+
+Object form:
+
+```json
+{
+  "output": {
+    "build": "./.as-test/build",
+    "logs": "./.as-test/logs",
+    "coverage": "./.as-test/coverage",
+    "snapshots": "./.as-test/snapshots"
   }
 }
 ```
 
-Current fuzz fields:
+Legacy explicit fields like `outDir`, `logs`, `coverageDir`, and `snapshotDir` still work and override the alias when both are present.
 
-- `fuzz.input`
-- `fuzz.runs`
-- `fuzz.seed`
-- `fuzz.target`
-- `fuzz.corpusDir`
-- `fuzz.crashDir`
+## Environment Values
 
-Validation behavior:
+`env`, `buildOptions.env`, and `runOptions.env` can each be:
 
-- config parsing is strict
-- unknown keys fail validation
-- invalid types fail validation
-- `ast doctor` is the fastest way to check config issues
+- a `.env` file path
+- an array of `KEY=value` strings
+- an object map
 
-Parallel execution:
+These values merge together, with mode overrides applied on top.
 
-- `ast test --parallel` picks a moderate worker count automatically
-- `--jobs <n>` forces an explicit file-worker count
-- `--build-jobs <n>` and `--run-jobs <n>` let you tune build and run concurrency separately
+## Build Options
+
+```json
+{
+  "buildOptions": {
+    "target": "wasi",
+    "args": [],
+    "cmd": "",
+    "env": {}
+  }
+}
+```
+
+Supported targets:
+
+- `wasi`
+- `bindings`
+- `web`
+
+`buildOptions.cmd` replaces the default build command path and supports placeholders such as `<file>`, `<name>`, `<outFile>`, `<target>`, and `<mode>`.
+
+## Run Options
+
+```json
+{
+  "runOptions": {
+    "runtime": {
+      "cmd": "node ./.as-test/runners/default.wasi.js <file>",
+      "browser": ""
+    },
+    "reporter": "default",
+    "env": {}
+  }
+}
+```
+
+Reporter values can be:
+
+- `""`
+- `"default"`
+- `"tap"`
+- a custom module path
+- an object with `name`, `options`, `outDir`, and `outFile`
+
+## Fuzz Options
+
+```json
+{
+  "fuzz": {
+    "input": ["./assembly/__fuzz__/*.fuzz.ts"],
+    "runs": 1000,
+    "seed": 1337,
+    "maxInputBytes": 4096,
+    "target": "bindings",
+    "corpusDir": "./.as-test/fuzz/corpus",
+    "crashDir": "./.as-test/crashes"
+  }
+}
+```
+
+Notes:
+
+- fuzz builds currently require `target: "bindings"`
+- `seed` is the deterministic base seed
+- failures and crashes are written under `crashDir`
+
+## Modes
+
+Modes let one project run against multiple targets or runtime commands.
+
+```json
+{
+  "modes": {
+    "wasi": {
+      "buildOptions": {
+        "target": "wasi"
+      },
+      "runOptions": {
+        "runtime": {
+          "cmd": "node ./.as-test/runners/default.wasi.js <file>"
+        }
+      }
+    },
+    "bindings": {
+      "buildOptions": {
+        "target": "bindings"
+      },
+      "runOptions": {
+        "runtime": {
+          "cmd": "node ./.as-test/runners/default.bindings.js <file>"
+        }
+      }
+    }
+  }
+}
+```
+
+Mode entries can override:
+
+- output directories
+- coverage config
+- build options
+- runtime config
+- reporter config
+- mode-level environment variables
+
+When multiple modes are active, output paths are namespaced by mode when needed.

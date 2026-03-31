@@ -1,50 +1,108 @@
 # Writing Tests
 
-Basic test file:
+## Basic Spec
 
 ```ts
-import { describe, test, expect } from "as-test";
+import { describe, expect, test } from "as-test";
 
 describe("math", () => {
-  test("addition", () => {
+  test("adds numbers", () => {
     expect(1 + 2).toBe(3);
-  });
-
-  test("close to", () => {
-    expect(3.14159).toBeCloseTo(3.14, 2);
   });
 });
 ```
 
-Useful APIs:
+You do not need to call `run()` manually in normal spec files.
+
+## Suite And Test APIs
+
+Available top-level registration helpers:
 
 - `describe(name, callback)`
 - `test(name, callback)`
 - `it(name, callback)`
-- `only(name, callback)` for a focused test
-- `todo(name)` for a placeholder
-- `xdescribe`, `xtest`, `xit` for skipped cases
-- `xonly(name, callback)` for a skipped focused-test placeholder
-- `beforeAll`, `afterAll`, `beforeEach`, `afterEach`
-- `expect(value, message?)`
+- `only(name, callback)`
+- `xonly(name, callback)`
+- `todo(name)`
+- `xdescribe(name, callback)`
+- `xtest(name, callback)`
+- `xit(name, callback)`
 
-Run tests:
+Hooks:
+
+- `beforeAll(callback)`
+- `afterAll(callback)`
+- `beforeEach(callback)`
+- `afterEach(callback)`
+
+Assertion entry point:
+
+- `expect(value, message?, location?)`
+- `xexpect(value, message?, location?)`
+
+## Hooks Example
+
+```ts
+import { beforeEach, describe, expect, test } from "as-test";
+
+let value = 0;
+
+beforeEach(() => {
+  value = 41;
+});
+
+describe("counter", () => {
+  test("increments", () => {
+    value++;
+    expect(value).toBe(42);
+  });
+});
+```
+
+## Focus, Skip, And Todo
+
+```ts
+import { only, test, todo, xtest } from "as-test";
+
+only("run just this top-level case", () => {});
+xtest("skip this case", () => {});
+todo("implement parser edge cases");
+```
+
+`only(...)` is top-level focused execution. `xonly(...)` is the skipped version of that placeholder.
+
+## Selectors
+
+Run everything:
 
 ```bash
 ast test
-ast test --parallel
-ast test math
-ast test ./assembly/__tests__/*.spec.ts
 ```
 
-Selectors:
+Run by bare selector:
 
-- bare names resolve against configured `input` globs
-- explicit file paths and globs are supported
-- comma-separated bare selectors also work, for example `ast test math,array,string`
+```bash
+ast test math
+```
 
-See also:
+Run several selectors:
 
-- [CLI Guide](./cli.md)
-- [Configuration](./configuration.md)
-- [Snapshots](./snapshots.md)
+```bash
+ast test math,array,string
+```
+
+Run explicit paths or globs:
+
+```bash
+ast test ./assembly/__tests__/math.spec.ts
+ast test "./assembly/__tests__/*.spec.ts"
+```
+
+Bare selectors resolve against your configured `input` globs.
+
+## Related Guides
+
+- [Assertions](./assertions/)
+- [Snapshots](./snapshots)
+- [Mocking](./mocking/)
+- [CLI](./cli)

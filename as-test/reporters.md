@@ -1,15 +1,26 @@
-# Custom Reporters
+# Reporters
 
-`as-test` ships with a default reporter and a TAP reporter, and also supports custom reporters.
+`as-test` ships with a built-in default reporter and a built-in TAP reporter.
 
-Built-in TAP:
+It also supports custom reporters loaded from a module path.
+
+## Built-in Reporters
+
+- `default`
+- `tap`
+
+CLI examples:
 
 ```bash
+ast test
 ast test --tap
-ast run --reporter tap
+ast test --reporter tap
+ast run --reporter ./scripts/my-reporter.mjs
 ```
 
-Config:
+## Configuring A Reporter
+
+String form:
 
 ```json
 {
@@ -19,17 +30,35 @@ Config:
 }
 ```
 
-Reporter object form:
+Object form:
 
 ```json
 {
   "runOptions": {
     "reporter": {
       "name": "tap",
-      "outFile": "./.as-test/reports/report.tap"
+      "options": ["per-file"],
+      "outDir": "./.as-test/reports"
     }
   }
 }
 ```
 
-Use custom reporters when you need CI integration or another output format on top of the runtime event stream.
+Supported TAP options:
+
+- `single-file`
+- `per-file`
+
+Defaults:
+
+- TAP output directory: `./.as-test/reports`
+- TAP output file in single-file mode: `./.as-test/reports/report.tap`
+
+## Custom Reporter Modules
+
+Custom reporters are loaded from a module path and must export a factory as either:
+
+- `createReporter`
+- the module default export
+
+The runtime resolves the path relative to the config file when it is not absolute.

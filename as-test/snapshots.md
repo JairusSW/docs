@@ -1,18 +1,18 @@
 # Snapshots
 
-Snapshot assertions compare the current value to a stored snapshot.
+Snapshots compare the serialized current value to a stored value under your snapshot directory.
 
-Example:
+## Basic Usage
 
 ```ts
-import { test, expect } from "as-test";
+import { expect, test } from "as-test";
 
 test("serializes payload", () => {
   expect("hello").toMatchSnapshot("greeting");
 });
 ```
 
-Useful commands:
+## Commands
 
 ```bash
 ast test
@@ -21,14 +21,26 @@ ast test --overwrite-snapshots
 ast test --no-snapshot
 ```
 
-Behavior:
+## Behavior
 
-- snapshots are stored in the configured snapshot directory
-- `--create-snapshots` writes missing values only
-- `--overwrite-snapshots` replaces existing snapshot values on mismatch
-- `--no-snapshot` disables snapshot assertions for the run
+- snapshots are stored under `snapshotDir`, which defaults to `./.as-test/snapshots`
+- `--create-snapshots` creates missing entries only
+- `--overwrite-snapshots` updates mismatched entries
+- `--no-snapshot` disables snapshot assertions for that run
+- snapshot files are readable `.snap` text files
 
-See also:
+## When To Use Them
 
-- [Configuration](./configuration.md)
-- [CLI Guide](./cli.md)
+Snapshots work well for:
+
+- structured output
+- generated text
+- serialized records
+- mocked host output
+- results that would be noisy to assert field-by-field
+
+## Related
+
+- [Assertions](./assertions/)
+- [Configuration](./configuration)
+- [CLI](./cli)

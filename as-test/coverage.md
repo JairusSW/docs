@@ -1,15 +1,17 @@
 # Coverage
 
-Coverage is enabled by default in most setups and reported after test runs.
+Coverage is opt-in.
 
-Run with coverage output:
+## Enable Coverage
+
+From the CLI:
 
 ```bash
-ast test
-ast test --show-coverage
+ast test --enable coverage
+ast test --enable coverage --show-coverage
 ```
 
-Config:
+From config:
 
 ```json
 {
@@ -17,20 +19,27 @@ Config:
 }
 ```
 
-or:
+Or with options:
 
 ```json
 {
   "coverage": {
     "enabled": true,
-    "includeSpecs": false
+    "includeSpecs": false,
+    "include": ["assembly/**/*.ts"],
+    "exclude": ["assembly/generated/**"]
   }
 }
 ```
 
-Behavior:
+## Behavior
 
-- coverage is collected from instrumented AssemblyScript sources
-- standard library and node_modules paths are excluded
-- `--show-coverage` prints uncovered points in the terminal
-- coverage artifacts are written to the configured coverage directory
+- coverage is disabled by default
+- `--show-coverage` prints uncovered point details in the terminal
+- coverage artifacts are written to `coverageDir`, which defaults to `./.as-test/coverage`
+- include/exclude filters apply to the collected AssemblyScript source paths
+
+## Related
+
+- [Configuration](./configuration)
+- [CLI](./cli)

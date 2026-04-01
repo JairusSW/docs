@@ -20,6 +20,8 @@ ast test --list
 
 ast fuzz
 ast fuzz parser --runs 5000 --seed 42
+ast fuzz parser --runs 1.5x
+ast fuzz parser --runs +10%
 
 ast doctor
 ```
@@ -48,7 +50,7 @@ Important flags:
 - `--enable <feature>`
 - `--disable <feature>`
 - `--fuzz`
-- `--fuzz-runs <n>`
+- `--fuzz-runs <value>`
 - `--fuzz-seed <n>`
 - `--reporter <name|path>`
 - `--tap`
@@ -59,13 +61,17 @@ Important flags:
 
 Important flags:
 
-- `--runs <n>`
+- `--runs <value>`
 - `--seed <n>`
 - `--jobs <n>`
 - `--build-jobs <n>`
 - `--run-jobs <n>`
 
 Unlike `ast test`, `ast fuzz` does not currently expose a `--parallel` shortcut flag. Use the job flags directly.
+
+For fuzz commands, `<value>` can be an absolute count like `500`, a multiplier
+like `1.5x`, an additive percentage like `+10%`, or an additive integer like
+`+100000`.
 
 ## `ast init`
 

@@ -19,6 +19,15 @@ fuzz("bounded integer addition", (left: i32, right: i32): bool => {
 });
 ```
 
+You can give one target its own operation count without changing the global
+`fuzz.runs` config:
+
+```ts
+fuzz("hot path stays stable", (): void => {
+  expect(1 + 1).toBe(2);
+}, 250);
+```
+
 ## Read Next
 
 - [Running Fuzzers](./running-fuzzers)

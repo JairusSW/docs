@@ -13,8 +13,8 @@ hero:
       text: Browse as-test
       link: /as-test/
     - theme: alt
-      text: See all projects
-      link: /#projects
+      text: Read my blog
+      link: https://blog.jairus.dev/
 
 features:
   - title: json-as
@@ -28,6 +28,10 @@ features:
   - title: try-as
     details: Exception-style control flow for AssemblyScript with transform-backed try/catch ergonomics and explicit runtime tradeoffs.
     link: /try-as/
+    linkText: Read the docs
+  - title: as-labs
+    details: Experimental AssemblyScript APIs and transforms, starting with WebAssembly branch hinting helpers and metadata emission.
+    link: /as-labs/
     linkText: Read the docs
   - title: wipc
     details: Structured communication between hosts and WebAssembly guests with typed messages, framing, and low-overhead transport.

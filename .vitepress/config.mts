@@ -2,7 +2,7 @@ import { defineConfig } from "vitepress";
 
 export default defineConfig({
   title: "Jairus' Docs",
-  description: "Documentation for json-as, as-test, try-as, and wipc",
+  description: "Centralized manuals and tutorials for all my projects",
   lang: "en-US",
   appearance: "dark",
   base: "/",
@@ -19,6 +19,7 @@ export default defineConfig({
           { text: "json-as", link: "/json-as/" },
           { text: "as-test", link: "/as-test/" },
           { text: "try-as", link: "/try-as/" },
+          { text: "as-labs", link: "/as-labs/" },
           { text: "wipc", link: "/wipc/" },
         ],
       },
@@ -27,6 +28,7 @@ export default defineConfig({
         items: [
           { text: "json-as", link: "https://github.com/JairusSW/json-as" },
           { text: "as-test", link: "https://github.com/JairusSW/as-test" },
+          { text: "as-labs", link: "https://github.com/JairusSW/as-labs" },
           { text: "try-as", link: "https://github.com/JairusSW/try-as" },
           { text: "wipc", link: "https://github.com/JairusSW/wipc" },
         ],
@@ -60,6 +62,16 @@ export default defineConfig({
       },
     ],
     sidebar: {
+      "/as-labs/": [
+        {
+          text: "as-labs",
+          items: [
+            { text: "Overview", link: "/as-labs/" },
+            { text: "Getting Started", link: "/as-labs/guide/getting-started" },
+            { text: "Branch Hinting", link: "/as-labs/guide/branch-hinting" },
+          ],
+        },
+      ],
       "/json-as/": [
         {
           text: "json-as",

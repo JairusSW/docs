@@ -28,6 +28,16 @@ fuzz("hot path stays stable", (): void => {
 }, 250);
 ```
 
+You can also set the per-target count as the second `.generate(...)` argument:
+
+```ts
+fuzz("ascii strings stay bounded", (value: string): bool => {
+  return value.length <= 40;
+}).generate((seed: FuzzSeed, run: (value: string) => bool): void => {
+  run(seed.string({ charset: "ascii", min: 0, max: 40 }));
+}, 250);
+```
+
 ## Read Next
 
 - [Running Fuzzers](./running-fuzzers)

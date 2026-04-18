@@ -39,5 +39,6 @@ ast test --fuzz --fuzz-runs +100000
 - fuzz targets currently build as `bindings`
 - `xfuzz(...)` registers a skipped fuzz target
 - CLI run overrides apply to each fuzzer's effective base count, including
-  fuzzers that set their own third `fuzz(..., operations)` argument
+  fuzzers that set `operations` via either `fuzz(..., operations)` or
+  `.generate(..., operations)`
 - fuzz results are summarized separately from normal test totals

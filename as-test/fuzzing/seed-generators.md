@@ -42,5 +42,5 @@ fuzz("ascii identifiers stay non-empty", (value: string): bool => {
       max: 16,
     }),
   );
-});
+}, 250);
 ```

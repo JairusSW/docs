@@ -1,12 +1,12 @@
 # Failure Reproduction
 
-Each fuzz campaign starts from a base seed. Individual iterations derive from `seed + n`.
+Each fuzz campaign starts from a base seed. If you do not pass `--seed`, `as-test` generates a random base seed for that campaign. Individual iterations derive from `seed + n`.
 
 When a fuzzer fails, `as-test` reports:
 
 - the base repro command
 - the exact failing seeds
-- one-run repro commands like `ast fuzz ... --seed <seed+n> --runs 1`
+- one-run repro commands like `ast fuzz ... --fuzzer <name> --seed <seed+n> --runs 1`
 - the captured `run(...)` inputs in `.as-test/crashes`
 
 ## Why This Matters
@@ -20,7 +20,7 @@ This makes failures easier to replay in two different ways:
 
 ```text
 Failing seeds: 8, 9, 10
-Repro 2: ast fuzz assembly/__fuzz__/parser.fuzz.ts --seed 8 --runs 1
+Repro 2: ast fuzz assembly/__fuzz__/parser.fuzz.ts --fuzzer parse-error --seed 8 --runs 1
 Input 2: [0]
 ```
 

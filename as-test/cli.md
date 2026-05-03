@@ -14,12 +14,14 @@
 ```bash
 ast test
 ast test math,array
+ast test math --suite array-check
 ast test --parallel
 ast test --mode wasi,bindings
 ast test --list
 
 ast fuzz
 ast fuzz parser --runs 5000 --seed 42
+ast fuzz parser --fuzzer parse-error --runs 1
 ast fuzz parser --runs 1.5x
 ast fuzz parser --runs +10%
 
@@ -51,7 +53,9 @@ Important flags:
 - `--disable <feature>`
 - `--fuzz`
 - `--fuzz-runs <value>`
-- `--fuzz-seed <n>`
+- `--fuzz-seed <n>` (pins seed; default is random per campaign)
+- `--suite <name[,name...]>`
+- `--suites <name[,name...]>`
 - `--reporter <name|path>`
 - `--tap`
 - `--verbose`
@@ -62,7 +66,11 @@ Important flags:
 Important flags:
 
 - `--runs <value>`
-- `--seed <n>`
+- `--seed <n>` (pins seed; default is random per campaign)
+- `--fuzzer <name[,name...]>`
+- `--fuzzers <name[,name...]>`
+- `--suite <name[,name...]>` (fuzz alias)
+- `--suites <name[,name...]>` (fuzz alias)
 - `--jobs <n>`
 - `--build-jobs <n>`
 - `--run-jobs <n>`
@@ -94,6 +102,13 @@ Selectors can be:
 - explicit file paths
 - explicit globs
 - comma-separated bare names such as `ast test math,array,string`
+
+Suite and fuzzer filters are separate from file selectors:
+
+- `ast run math --suite array-check`
+- `ast run math --suite array-manipulation/array-check`
+- `ast fuzz parser --fuzzer parse-error`
+- `ast test --fuzz parser --fuzzers parse-error,serialize-roundtrip`
 
 ## Web Modes
 

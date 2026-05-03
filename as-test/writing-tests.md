@@ -91,6 +91,13 @@ Run several selectors:
 ast test math,array,string
 ```
 
+Run one suite inside a selected file:
+
+```bash
+ast run math --suite array-check
+ast run math --suite array-manipulation/array-check
+```
+
 Run explicit paths or globs:
 
 ```bash
@@ -99,6 +106,12 @@ ast test "./assembly/__tests__/*.spec.ts"
 ```
 
 Bare selectors resolve against your configured `input` globs.
+
+`--suite` and `--suites` filter the reported result to matching suite names:
+
+- bare names like `array-check` match the shallowest unique suite slug
+- slash paths like `array-manipulation/array-check` match the full suite path
+- commas select several suite targets at once
 
 ## Related Guides
 

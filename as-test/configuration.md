@@ -126,7 +126,6 @@ Reporter values can be:
   "fuzz": {
     "input": ["./assembly/__fuzz__/*.fuzz.ts"],
     "runs": 1000,
-    "seed": 1337,
     "maxInputBytes": 4096,
     "target": "bindings",
     "corpusDir": "./.as-test/fuzz/corpus",
@@ -138,7 +137,7 @@ Reporter values can be:
 Notes:
 
 - fuzz builds currently require `target: "bindings"`
-- `seed` is the deterministic base seed
+- `seed` is optional; if omitted, each campaign uses a random base seed
 - failures and crashes are written under `crashDir`
 
 ## Modes

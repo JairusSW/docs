@@ -15,7 +15,7 @@ The schema file in this repo is `as-test.config.schema.json`.
   },
   "runOptions": {
     "runtime": {
-      "cmd": "node ./.as-test/runners/default.wasi.js <file>"
+      "cmd": "node ./.as-test/runners/default.wasi.js"
     }
   }
 }
@@ -65,6 +65,8 @@ Object form:
 
 Legacy explicit fields like `outDir`, `logs`, `coverageDir`, and `snapshotDir` still work and override the alias when both are present.
 
+`ast clean` removes build, logs, and coverage outputs from these configured locations. A full `ast clean` also clears the shared `fuzz.crashDir`.
+
 ## Environment Values
 
 `env`, `buildOptions.env`, and `runOptions.env` can each be:
@@ -102,7 +104,7 @@ Supported targets:
 {
   "runOptions": {
     "runtime": {
-      "cmd": "node ./.as-test/runners/default.wasi.js <file>",
+      "cmd": "node ./.as-test/runners/default.wasi.js",
       "browser": ""
     },
     "reporter": "default",
@@ -110,6 +112,8 @@ Supported targets:
   }
 }
 ```
+
+The default generated runners are env-driven single-file scripts. Standard runner commands do not need a `<file>` argument.
 
 Reporter values can be:
 
@@ -147,23 +151,35 @@ Modes let one project run against multiple targets or runtime commands.
 ```json
 {
   "modes": {
-    "wasi": {
+    "node:wasi": {
       "buildOptions": {
         "target": "wasi"
       },
       "runOptions": {
         "runtime": {
-          "cmd": "node ./.as-test/runners/default.wasi.js <file>"
+          "cmd": "node ./.as-test/runners/default.wasi.js"
         }
       }
     },
-    "bindings": {
+    "node:bindings": {
       "buildOptions": {
         "target": "bindings"
       },
       "runOptions": {
         "runtime": {
-          "cmd": "node ./.as-test/runners/default.bindings.js <file>"
+          "cmd": "node ./.as-test/runners/default.bindings.js"
+        }
+      }
+    },
+    "chromium:headless": {
+      "default": false,
+      "buildOptions": {
+        "target": "web"
+      },
+      "runOptions": {
+        "runtime": {
+          "cmd": "node ./.as-test/runners/default.web.js --headless",
+          "browser": "chromium"
         }
       }
     }
@@ -179,5 +195,9 @@ Mode entries can override:
 - runtime config
 - reporter config
 - mode-level environment variables
+
+Set `default: false` on a mode to make it manual-only. When `--mode` is omitted, modes with `default: false` are skipped.
+
+`ast clean` is the exception: when `--mode` is omitted, it cleans every configured mode regardless of `default: false`.
 
 When multiple modes are active, output paths are namespaced by mode when needed.

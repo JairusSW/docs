@@ -8,6 +8,7 @@
 - `ast test`
 - `ast fuzz`
 - `ast doctor`
+- `ast clean`
 
 ## Common Examples
 
@@ -16,7 +17,7 @@ ast test
 ast test math,array
 ast test math --suite array-check
 ast test --parallel
-ast test --mode wasi,bindings
+ast test --mode node:wasi,node:bindings
 ast test --list
 
 ast fuzz
@@ -26,6 +27,9 @@ ast fuzz parser --runs 1.5x
 ast fuzz parser --runs +10%
 
 ast doctor
+ast clean
+ast clean --mode node:wasi
+ast clean -f
 ```
 
 ## Shared Flags
@@ -35,6 +39,10 @@ ast doctor
 - `--list`
 - `--list-modes`
 - `--help`
+
+Modes with `default: false` are manual-only unless explicitly selected with `--mode`.
+
+For `ast clean`, `default: false` is ignored. `ast clean` without `--mode` cleans every configured mode.
 
 ## `ast test`
 
@@ -93,6 +101,21 @@ Useful flags:
 - `--install`
 - `--yes`
 - `--force`
+
+## `ast clean`
+
+Behavior:
+
+- without `--mode`, `ast clean` removes configured build outputs, coverage outputs, crash artifacts, and logs for every configured mode
+- without `-f` or `--force`, full clean prompts with `[Y/n]`
+- with `--mode`, clean stays scoped to the selected mode(s)
+- shared paths are skipped during scoped cleans unless every owning mode is selected
+
+Examples:
+
+- `ast clean`
+- `ast clean -f`
+- `ast clean --mode node:wasi`
 
 ## Selectors
 

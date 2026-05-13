@@ -8,6 +8,12 @@ Add `as-test` to an AssemblyScript project:
 npm install --save-dev as-test
 ```
 
+If you are upgrading to `1.1.0`, refresh generated runners with:
+
+```bash
+rm -rf .as-test/runners && npx as-test init
+```
+
 ## Scaffold A Project
 
 The fastest path is the initializer:
@@ -72,7 +78,7 @@ npx ast test --fuzz
   },
   "runOptions": {
     "runtime": {
-      "cmd": "node ./.as-test/runners/default.wasi.js <file>"
+      "cmd": "node ./.as-test/runners/default.wasi.js"
     }
   }
 }

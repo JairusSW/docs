@@ -6,23 +6,35 @@ One project can run against more than one target by defining named modes.
 {
   "input": ["assembly/__tests__/*.spec.ts"],
   "modes": {
-    "wasi": {
+    "node:wasi": {
       "buildOptions": {
         "target": "wasi"
       },
       "runOptions": {
         "runtime": {
-          "cmd": "node ./.as-test/runners/default.wasi.js <file>"
+          "cmd": "node ./.as-test/runners/default.wasi.js"
         }
       }
     },
-    "bindings": {
+    "node:bindings": {
       "buildOptions": {
         "target": "bindings"
       },
       "runOptions": {
         "runtime": {
-          "cmd": "node ./.as-test/runners/default.bindings.js <file>"
+          "cmd": "node ./.as-test/runners/default.bindings.js"
+        }
+      }
+    },
+    "chromium:headless": {
+      "default": false,
+      "buildOptions": {
+        "target": "web"
+      },
+      "runOptions": {
+        "runtime": {
+          "cmd": "node ./.as-test/runners/default.web.js --headless",
+          "browser": "chromium"
         }
       }
     }
@@ -33,5 +45,5 @@ One project can run against more than one target by defining named modes.
 Run both:
 
 ```bash
-ast test --mode wasi,bindings
+ast test --mode node:wasi,node:bindings
 ```

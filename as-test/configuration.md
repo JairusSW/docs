@@ -123,6 +123,40 @@ Reporter values can be:
 - a custom module path
 - an object with `name`, `options`, `outDir`, and `outFile`
 
+## Coverage Options
+
+```json
+{
+  "coverage": {
+    "enabled": true,
+    "mode": "project",
+    "dependencies": ["json-as"],
+    "includeSpecs": false,
+    "include": [],
+    "exclude": [],
+    "ignore": {
+      "labels": [],
+      "names": [],
+      "locations": [],
+      "snippets": []
+    }
+  }
+}
+```
+
+Notes:
+
+- `coverage: true` is a shortcut for enabling coverage with `mode: "project"`
+- `mode` can be:
+  - `project`: project files only
+  - `all`: project files and dependency files
+- `dependencies` is a package-name allowlist for dependency coverage
+  - use names like `json-as` or `@scope/pkg`
+  - this works for both normal installs and `pnpm` installs
+- `includeSpecs` controls whether `*.spec.ts` files are eligible for coverage
+- `include` and `exclude` refine the final eligible file set after `mode`, `dependencies`, and `includeSpecs`
+- AssemblyScript stdlib files are still excluded
+
 ## Fuzz Options
 
 ```json
@@ -197,6 +231,11 @@ Mode entries can override:
 - mode-level environment variables
 
 Set `default: false` on a mode to make it manual-only. When `--mode` is omitted, modes with `default: false` are skipped.
+
+When the config declares any modes, only those modes run on an implicit
+`ast test` — the unnamed base config is not added on top. If no modes are
+declared at all, the base config runs by itself. Modes that don't override
+`runOptions` inherit the runner from the base config.
 
 `ast clean` is the exception: when `--mode` is omitted, it cleans every configured mode regardless of `default: false`.
 

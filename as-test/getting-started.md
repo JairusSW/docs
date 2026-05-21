@@ -5,8 +5,12 @@
 Add `as-test` to an AssemblyScript project:
 
 ```bash
-npm install --save-dev as-test
+npm install --save-dev as-test json-as
 ```
+
+`json-as` is a required peer dependency (used for value serialization in
+assertions, snapshots, and `log()`). npm 7+ installs it automatically, but
+pnpm and yarn users must add it explicitly.
 
 If you are upgrading to `1.1.0`, refresh generated runners with:
 

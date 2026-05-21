@@ -29,7 +29,6 @@ ast fuzz parser --runs +10%
 ast doctor
 ast clean
 ast clean --mode node:wasi
-ast clean -f
 ```
 
 ## Shared Flags
@@ -57,6 +56,7 @@ Important flags:
 - `--overwrite-snapshots`
 - `--no-snapshot`
 - `--show-coverage`
+- `--show-coverage=all`
 - `--enable <feature>`
 - `--disable <feature>`
 - `--fuzz`
@@ -68,6 +68,14 @@ Important flags:
 - `--tap`
 - `--verbose`
 - `--clean`
+- `--watch` (re-run on source or spec changes, 150ms debounced; Ctrl+C to stop)
+
+Coverage notes:
+
+- `--show-coverage` prints uncovered coverage points
+- `--show-coverage=all` expands nested coverage gaps that are normally collapsed
+- `--verbose` also expands nested coverage gaps
+- dependency coverage is configured through `coverage.mode` and `coverage.dependencies` in config
 
 ## `ast fuzz`
 
@@ -107,14 +115,12 @@ Useful flags:
 Behavior:
 
 - without `--mode`, `ast clean` removes configured build outputs, coverage outputs, crash artifacts, and logs for every configured mode
-- without `-f` or `--force`, full clean prompts with `[Y/n]`
 - with `--mode`, clean stays scoped to the selected mode(s)
 - shared paths are skipped during scoped cleans unless every owning mode is selected
 
 Examples:
 
 - `ast clean`
-- `ast clean -f`
 - `ast clean --mode node:wasi`
 
 ## Selectors

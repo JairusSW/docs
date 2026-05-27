@@ -32,13 +32,35 @@ Hooks:
 
 - `beforeAll(callback)`
 - `afterAll(callback)`
-- `beforeEach(callback)`
-- `afterEach(callback)`
+- `beforeEach(callback, kinds?)`
+- `afterEach(callback, kinds?)`
 
 Assertion entry point:
 
 - `expect(value, message?, location?)`
 - `xexpect(value, message?, location?)`
+
+## Suites And Tests
+
+Every grouping block — `describe`, `test`, `it`, `only` (and their skip
+variants) — is a **suite**. Each `expect()` call is a **test**. So a block that
+contains five assertions reports as one suite with five tests, and an empty
+block is just a suite with no tests.
+
+Blocks nest to any depth — a `describe`/`test`/`it` declared inside another
+block becomes a child of it:
+
+```ts
+import { describe, expect, it } from "as-test";
+
+describe("parser", () => {
+  describe("numbers", () => {
+    it("parses integers", () => {
+      expect(parseInt("42")).toBe(42);
+    });
+  });
+});
+```
 
 ## Hooks Example
 
@@ -58,6 +80,47 @@ describe("counter", () => {
   });
 });
 ```
+
+By default `beforeEach`/`afterEach` run around each test case (`test`, `it`,
+`only`, and their skip variants) and **not** around grouping blocks like
+`describe`. Pass an optional list of suite kinds to run around exactly those
+kinds instead:
+
+```ts
+// Run before every `describe` AND every `test`.
+beforeEach(() => {
+  /* ... */
+}, ["describe", "test"]);
+
+// Run after each `test` only.
+afterEach(() => {
+  /* ... */
+}, ["test"]);
+```
+
+## Logging
+
+Use `log(value)` inside a test to capture a value. Anything `expect()` can
+serialize is supported — primitives, strings, arrays, `Map`, `Set`, `Date`,
+`ArrayBuffer`, typed arrays, and classes (via a generated or hand-written
+`toJSON()`):
+
+```ts
+import { describe, expect, it, log } from "as-test";
+
+describe("user", () => {
+  it("builds a profile", () => {
+    const profile = makeProfile();
+    log(profile);
+    expect(profile.id).toBe(7);
+  });
+});
+```
+
+After a run, as-test reports how many logs were captured and writes them to
+`.as-test/logs/latest.log`, grouped by spec and de-duplicated across modes. Pass
+`--show-logs` to print them at the end of the run instead. See the [CLI](./cli)
+page.
 
 ## Focus, Skip, And Todo
 

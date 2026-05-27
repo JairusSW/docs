@@ -67,8 +67,21 @@ Important flags:
 - `--reporter <name|path>`
 - `--tap`
 - `--verbose`
+- `--show-logs`
 - `--clean`
-- `--watch` (re-run on source or spec changes, 150ms debounced; Ctrl+C to stop)
+- `--watch`, `-w` (re-run on source or spec changes, 150ms debounced)
+
+Log notes:
+
+- captured `log()` output is written to `.as-test/logs/latest.log` (grouped by spec, de-duplicated across modes), and the run reports how many logs were captured
+- `--show-logs` prints the captured logs as a grouped block at the end of the run instead of just pointing at the file
+
+Watch mode keys (interactive TTY):
+
+- `w` — toggle auto-run off (manual mode) and back on. While paused, edits are remembered but not run; resuming re-runs everything that changed.
+- `a` — re-run all specs
+- `space` — retry the currently failing specs
+- `Ctrl+C` — stop
 
 Coverage notes:
 

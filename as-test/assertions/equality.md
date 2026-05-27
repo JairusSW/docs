@@ -25,7 +25,11 @@ Use `toBe` when you mean:
 expect([1, 2, 3]).toEqual([1, 2, 3]);
 ```
 
-For managed values, `toEqual` delegates to `__as_test_equals(other, strict)` when needed.
+For managed values this is a structural, field-by-field comparison (with cycle
+detection). as-test generates the comparison automatically for any class that
+appears in an equality matcher — including nested classes reachable through its
+fields — so you don't need `json-as` or a hand-written method. If you do declare
+your own `__as_test_equals`, the transform leaves it alone.
 
 ## `toStrictEqual`
 

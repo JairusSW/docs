@@ -1,56 +1,45 @@
 # Configuration
 
-The config file is `as-test.config.json`.
-
-The schema file in this repo is `as-test.config.schema.json`.
-
-## Minimal Example
+Configuration lives in `as-test.config.json`. The bundled JSON Schema (`as-test.config.schema.json`) powers editor autocompletion — reference it with `$schema`:
 
 ```json
 {
+  "$schema": "node_modules/as-test/as-test.config.schema.json",
   "input": ["assembly/__tests__/*.spec.ts"],
   "output": ".as-test/",
-  "buildOptions": {
-    "target": "wasi"
-  },
+  "buildOptions": { "target": "wasi" },
   "runOptions": {
-    "runtime": {
-      "cmd": "node ./.as-test/runners/default.wasi.js"
-    }
+    "runtime": { "cmd": "node ./.as-test/runners/default.wasi.js" }
   }
 }
 ```
 
-## Top-Level Fields
+## Top-level fields
 
-Common top-level fields:
+| Field | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `input` | `string[]` | `["./assembly/__tests__/*.spec.ts"]` | Globs for spec files. Negate with `!`. |
+| `output` | `string \| object` | — | Output location ([alias](#output-paths)). |
+| `outDir` | `string` | `./.as-test/build` | Compiled artifacts. |
+| `logs` | `string \| "none"` | `./.as-test/logs` | Captured `log()` output, or `"none"`. |
+| `coverageDir` | `string \| "none"` | `./.as-test/coverage` | Coverage artifacts, or `"none"`. |
+| `snapshotDir` | `string` | `./.as-test/snapshots` | Stored snapshots. |
+| `coverage` | `boolean \| object` | `false` | [Coverage](#coverage) settings. |
+| `features` | `string[]` | `[]` | Enabled [features](#features). |
+| `env` | `string \| string[] \| object` | `{}` | [Environment values](#environment-values). |
+| `buildOptions` | `object` | — | [Build options](#build-options). |
+| `runOptions` | `object` | — | [Run options](#run-options). |
+| `fuzz` | `object` | — | [Fuzz config](#fuzz). |
+| `modes` | `object` | `{}` | Named [modes](#modes). |
+| `config` | `string` | `"none"` | Optional asconfig path passed to `asc`. |
 
-- `input`
-- `output`
-- `outDir`
-- `logs`
-- `coverageDir`
-- `snapshotDir`
-- `coverage`
-- `env`
-- `buildOptions`
-- `runOptions`
-- `fuzz`
-- `modes`
+## Output paths
 
-## Output Paths
-
-You can use the older individual path fields, or the newer `output` alias.
-
-String form:
+`output` is a convenience alias. Use a single string for the root, or an object to place each artifact kind:
 
 ```json
-{
-  "output": ".as-test/"
-}
+{ "output": ".as-test/" }
 ```
-
-Object form:
 
 ```json
 {
@@ -63,21 +52,23 @@ Object form:
 }
 ```
 
-Legacy explicit fields like `outDir`, `logs`, `coverageDir`, and `snapshotDir` still work and override the alias when both are present.
+The explicit fields (`outDir`, `logs`, `coverageDir`, `snapshotDir`) still work and override the alias when both are set. `ast clean` removes build, logs, and coverage from these locations (and the shared `fuzz.crashDir`).
 
-`ast clean` removes build, logs, and coverage outputs from these configured locations. A full `ast clean` also clears the shared `fuzz.crashDir`.
+## Environment values
 
-## Environment Values
+`env`, `buildOptions.env`, and `runOptions.env` each accept three forms:
 
-`env`, `buildOptions.env`, and `runOptions.env` can each be:
+- a `.env` file path,
+- an array of `KEY=value` strings,
+- an object map.
 
-- a `.env` file path
-- an array of `KEY=value` strings
-- an object map
+```json
+{ "env": { "LOG_LEVEL": "debug" } }
+```
 
-These values merge together, with mode overrides applied on top.
+They merge together — top-level first, then build/run-specific, then mode overrides on top.
 
-## Build Options
+## Build options
 
 ```json
 {
@@ -90,15 +81,18 @@ These values merge together, with mode overrides applied on top.
 }
 ```
 
-Supported targets:
+| Field | Type | Purpose |
+| --- | --- | --- |
+| `target` | `"wasi" \| "bindings" \| "web"` | Build target (see [Targets & Runtimes](./runtimes/)). |
+| `args` | `string[]` | Extra arguments passed to `asc`. |
+| `cmd` | `string` | Replace the default build command entirely. |
+| `env` | env | Build-only environment overrides. |
 
-- `wasi`
-- `bindings`
-- `web`
+`buildOptions.cmd` supports the placeholders `<file>`, `<name>`, `<outFile>`, `<target>`, and `<mode>`.
 
-`buildOptions.cmd` replaces the default build command path and supports placeholders such as `<file>`, `<name>`, `<outFile>`, `<target>`, and `<mode>`.
+> For `bindings`/`web` targets, `as-test` injects `--bindings raw` unless you declare `--bindings` yourself in `args` (or in a referenced asconfig). See [Bindings: raw & esm](./runtimes/bindings).
 
-## Run Options
+## Run options
 
 ```json
 {
@@ -113,17 +107,18 @@ Supported targets:
 }
 ```
 
-The default generated runners are env-driven single-file scripts. Standard runner commands do not need a `<file>` argument.
+| Field | Type | Purpose |
+| --- | --- | --- |
+| `runtime.cmd` | `string` | Runtime command. Supports `<file>` and `<name>`. |
+| `runtime.browser` | `string` | Browser for web targets: `chrome`, `chromium`, `firefox`, `webkit`, or a path. |
+| `reporter` | `string \| object` | [Reporter](./reporters) selection. |
+| `env` | env | Run-only environment overrides. |
 
-Reporter values can be:
+The generated runners are env-driven single-file scripts, so standard runner commands don't need a `<file>` argument. Reporter accepts `""`, `"default"`, `"tap"`, a custom module path, or an object — see [Reporters](./reporters).
 
-- `""`
-- `"default"`
-- `"tap"`
-- a custom module path
-- an object with `name`, `options`, `outDir`, and `outFile`
+## Coverage
 
-## Coverage Options
+Boolean shorthand or a detailed object:
 
 ```json
 {
@@ -134,30 +129,25 @@ Reporter values can be:
     "includeSpecs": false,
     "include": [],
     "exclude": [],
-    "ignore": {
-      "labels": [],
-      "names": [],
-      "locations": [],
-      "snippets": []
-    }
+    "ignore": { "labels": [], "names": [], "locations": [], "snippets": [] }
   }
 }
 ```
 
-Notes:
+| Field | Default | Purpose |
+| --- | --- | --- |
+| `enabled` | `false` | Turn coverage on. `"coverage": true` is shorthand for `{ enabled: true, mode: "project" }`. |
+| `mode` | `"project"` | `project` = your sources only; `all` = include dependencies. |
+| `dependencies` | `[]` | Package-name allowlist for dependency coverage. |
+| `includeSpecs` | `false` | Include `*.spec.ts` files. |
+| `include` / `exclude` | `[]` | Glob refinements applied after the above. |
+| `ignore` | — | Drop points by `labels`, `names`, `locations`, or `snippets`. |
 
-- `coverage: true` is a shortcut for enabling coverage with `mode: "project"`
-- `mode` can be:
-  - `project`: project files only
-  - `all`: project files and dependency files
-- `dependencies` is a package-name allowlist for dependency coverage
-  - use names like `json-as` or `@scope/pkg`
-  - this works for both normal installs and `pnpm` installs
-- `includeSpecs` controls whether `*.spec.ts` files are eligible for coverage
-- `include` and `exclude` refine the final eligible file set after `mode`, `dependencies`, and `includeSpecs`
-- AssemblyScript stdlib files are still excluded
+See [Coverage](./coverage) for details.
 
-## Fuzz Options
+## Fuzz
+
+Used by `ast fuzz` and `ast test --fuzz`:
 
 ```json
 {
@@ -172,44 +162,47 @@ Notes:
 }
 ```
 
-Notes:
+| Field | Default | Purpose |
+| --- | --- | --- |
+| `input` | `["./assembly/__fuzz__/*.fuzz.ts"]` | Globs for fuzz targets. |
+| `runs` | `1000` | Iterations per target. |
+| `seed` | random | Base seed; omit for a fresh random seed each run. |
+| `maxInputBytes` | `4096` | Max generated input size. |
+| `target` | `"bindings"` | Fuzz builds require the bindings target. |
+| `corpusDir` | `./.as-test/fuzz/corpus` | Seed corpus. |
+| `crashDir` | `./.as-test/crashes` | Crash artifacts. |
 
-- fuzz builds currently require `target: "bindings"`
-- `seed` is optional; if omitted, each campaign uses a random base seed
-- failures and crashes are written under `crashDir`
+## Features
+
+`features` enables compiler-level capabilities:
+
+```json
+{ "features": ["try-as"] }
+```
+
+- `"try-as"` wires up the [try-as](/try-as/) transform — required for `try`/`catch`/`finally` and the [`toThrow`](./assertions/snapshots-and-throws#tothrow) matcher.
+- Other names (e.g. `"simd"`, `"threads"`) are passed to `asc` as `--enable <name>`.
+
+CLI `--enable` / `--disable` override the config list. In a mode, `features` **replaces** the base list entirely — set `"features": []` to disable everything for that mode.
 
 ## Modes
 
-Modes let one project run against multiple targets or runtime commands.
+Modes let one project run against multiple targets or runtime commands. Each entry overrides the base config; a value can be an inline object or a string path to an external config file.
 
 ```json
 {
   "modes": {
     "node:wasi": {
-      "buildOptions": {
-        "target": "wasi"
-      },
-      "runOptions": {
-        "runtime": {
-          "cmd": "node ./.as-test/runners/default.wasi.js"
-        }
-      }
+      "buildOptions": { "target": "wasi" },
+      "runOptions": { "runtime": { "cmd": "node ./.as-test/runners/default.wasi.js" } }
     },
     "node:bindings": {
-      "buildOptions": {
-        "target": "bindings"
-      },
-      "runOptions": {
-        "runtime": {
-          "cmd": "node ./.as-test/runners/default.bindings.js"
-        }
-      }
+      "buildOptions": { "target": "bindings" },
+      "runOptions": { "runtime": { "cmd": "node ./.as-test/runners/default.bindings.js" } }
     },
     "chromium:headless": {
       "default": false,
-      "buildOptions": {
-        "target": "web"
-      },
+      "buildOptions": { "target": "web" },
       "runOptions": {
         "runtime": {
           "cmd": "node ./.as-test/runners/default.web.js --headless",
@@ -221,22 +214,11 @@ Modes let one project run against multiple targets or runtime commands.
 }
 ```
 
-Mode entries can override:
+A mode can override `input`, output directories, `coverage`, `features`, `fuzz`, `buildOptions`, `runOptions`, and `env`.
 
-- output directories
-- coverage config
-- build options
-- runtime config
-- reporter config
-- mode-level environment variables
+- `"default": false` makes a mode manual-only — skipped on a bare `ast test`, runnable via `--mode`.
+- When any modes are declared, an implicit `ast test` runs **only** those modes; the unnamed base config is not added on top. With no modes, the base config runs by itself.
+- When multiple modes are active, output paths are namespaced by mode.
+- `ast clean` cleans every configured mode when `--mode` is omitted, regardless of `default`.
 
-Set `default: false` on a mode to make it manual-only. When `--mode` is omitted, modes with `default: false` are skipped.
-
-When the config declares any modes, only those modes run on an implicit
-`ast test` — the unnamed base config is not added on top. If no modes are
-declared at all, the base config runs by itself. Modes that don't override
-`runOptions` inherit the runner from the base config.
-
-`ast clean` is the exception: when `--mode` is omitted, it cleans every configured mode regardless of `default: false`.
-
-When multiple modes are active, output paths are namespaced by mode when needed.
+See [Multiple Runtimes](./runtimes/multiple-runtimes) for the conceptual guide.

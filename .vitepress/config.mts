@@ -101,105 +101,105 @@ export default defineConfig({
       ],
       "/as-test/": [
         {
-          text: "as-test",
+          text: "Introduction",
           items: [
             { text: "Overview", link: "/as-test/" },
             { text: "Getting Started", link: "/as-test/getting-started" },
             { text: "Writing Tests", link: "/as-test/writing-tests" },
+          ],
+        },
+        {
+          text: "Assertions",
+          collapsed: false,
+          items: [
+            { text: "Overview", link: "/as-test/assertions/" },
+            { text: "Equality", link: "/as-test/assertions/equality" },
+            { text: "Numbers", link: "/as-test/assertions/numbers" },
             {
-              text: "Assertions",
-              collapsed: false,
-              items: [
-                { text: "Overview", link: "/as-test/assertions/" },
-                {
-                  text: "Equality Matchers",
-                  link: "/as-test/assertions/equality",
-                },
-                {
-                  text: "Number Matchers",
-                  link: "/as-test/assertions/numbers",
-                },
-                {
-                  text: "Types And Truthiness",
-                  link: "/as-test/assertions/types-and-truthiness",
-                },
-                {
-                  text: "Strings And Collections",
-                  link: "/as-test/assertions/strings-and-collections",
-                },
-                {
-                  text: "Snapshots And Throws",
-                  link: "/as-test/assertions/snapshots-and-throws",
-                },
-              ],
+              text: "Types & Truthiness",
+              link: "/as-test/assertions/types-and-truthiness",
             },
+            {
+              text: "Strings & Collections",
+              link: "/as-test/assertions/strings-and-collections",
+            },
+            {
+              text: "Snapshots & Throws",
+              link: "/as-test/assertions/snapshots-and-throws",
+            },
+          ],
+        },
+        {
+          text: "Snapshots & Mocking",
+          collapsed: false,
+          items: [
             { text: "Snapshots", link: "/as-test/snapshots" },
+            { text: "Mocking Overview", link: "/as-test/mocking/" },
+            { text: "Function Mocks", link: "/as-test/mocking/function-mocks" },
+            { text: "Import Mocks", link: "/as-test/mocking/import-mocks" },
+            { text: "Stable Values", link: "/as-test/mocking/stable-values" },
+          ],
+        },
+        {
+          text: "Fuzzing",
+          collapsed: false,
+          items: [
+            { text: "Overview", link: "/as-test/fuzzing/" },
             {
-              text: "Mocking",
-              collapsed: false,
-              items: [
-                { text: "Overview", link: "/as-test/mocking/" },
-                {
-                  text: "Function Mocks",
-                  link: "/as-test/mocking/function-mocks",
-                },
-                {
-                  text: "Import Mocks",
-                  link: "/as-test/mocking/import-mocks",
-                },
-                {
-                  text: "Stable Values",
-                  link: "/as-test/mocking/stable-values",
-                },
-              ],
+              text: "Running Fuzzers",
+              link: "/as-test/fuzzing/running-fuzzers",
             },
             {
-              text: "Fuzzing",
-              collapsed: false,
-              items: [
-                { text: "Overview", link: "/as-test/fuzzing/" },
-                {
-                  text: "Running Fuzzers",
-                  link: "/as-test/fuzzing/running-fuzzers",
-                },
-                {
-                  text: "Seed Generators",
-                  link: "/as-test/fuzzing/seed-generators",
-                },
-                {
-                  text: "Failure Reproduction",
-                  link: "/as-test/fuzzing/failure-reproduction",
-                },
-              ],
+              text: "Seed Generators",
+              link: "/as-test/fuzzing/seed-generators",
             },
             {
-              text: "Examples",
-              collapsed: false,
-              items: [
-                { text: "Overview", link: "/as-test/examples/" },
-                {
-                  text: "Minimal Spec",
-                  link: "/as-test/examples/minimal-spec",
-                },
-                {
-                  text: "Snapshots And Mocks",
-                  link: "/as-test/examples/snapshots-and-mocks",
-                },
-                {
-                  text: "Fuzzing Patterns",
-                  link: "/as-test/examples/fuzzing-patterns",
-                },
-                {
-                  text: "Multi-Mode Config",
-                  link: "/as-test/examples/multi-mode-config",
-                },
-              ],
+              text: "Failure Reproduction",
+              link: "/as-test/fuzzing/failure-reproduction",
             },
+          ],
+        },
+        {
+          text: "Runtimes & Modes",
+          collapsed: false,
+          items: [
+            { text: "Targets & Runtimes", link: "/as-test/runtimes/" },
+            { text: "Bindings: raw & esm", link: "/as-test/runtimes/bindings" },
+            {
+              text: "Multiple Runtimes",
+              link: "/as-test/runtimes/multiple-runtimes",
+            },
+          ],
+        },
+        {
+          text: "Reference",
+          collapsed: false,
+          items: [
+            { text: "CLI", link: "/as-test/cli" },
+            { text: "Configuration", link: "/as-test/configuration" },
             { text: "Coverage", link: "/as-test/coverage" },
             { text: "Reporters", link: "/as-test/reporters" },
             { text: "Doctor", link: "/as-test/doctor" },
-            { text: "CLI", link: "/as-test/cli" },
-            { text: "Configuration", link: "/as-test/configuration" },
+          ],
+        },
+        {
+          text: "Recipes",
+          collapsed: false,
+          items: [
+            { text: "Overview", link: "/as-test/examples/" },
+            { text: "Minimal Spec", link: "/as-test/examples/minimal-spec" },
+            {
+              text: "Snapshots & Mocks",
+              link: "/as-test/examples/snapshots-and-mocks",
+            },
+            {
+              text: "Fuzzing Patterns",
+              link: "/as-test/examples/fuzzing-patterns",
+            },
+            {
+              text: "Multi-Mode Config",
+              link: "/as-test/examples/multi-mode-config",
+            },
           ],
         },
       ],

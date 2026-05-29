@@ -1,37 +1,46 @@
 # Failure Reproduction
 
-Each fuzz campaign starts from a base seed. If you do not pass `--seed`, `as-test` generates a random base seed for that campaign. Individual iterations derive from `seed + n`.
+A fuzz failure is only useful if you can reproduce it. Because every input is derived from a seed, `as-test` reports the exact seed and input for each failure and writes crash artifacts you can replay.
 
-When a fuzzer fails, `as-test` reports:
+## What a failure reports
 
-- the base repro command
-- the exact failing seeds
-- one-run repro commands like `ast fuzz ... --fuzzer <name> --seed <seed+n> --runs 1`
-- the captured `run(...)` inputs in `.as-test/crashes`
+When an iteration fails or crashes, the output records:
 
-## Why This Matters
-
-This makes failures easier to replay in two different ways:
-
-1. rerun the exact failing iteration by seed
-2. inspect the captured input payload even if the generator has side effects
-
-## Example Output
+- the **run number** within the campaign,
+- the **seed** that produced the input,
+- the stringified **input** that triggered it,
+- a ready-to-run **reproduction command**.
 
 ```text
-Failing seeds: 8, 9, 10
-Repro 2: ast fuzz assembly/__fuzz__/parser.fuzz.ts --fuzzer parse-error --seed 8 --runs 1
-Input 2: [0]
+FAIL  bounded integer addition
+  run 412 / 1000
+  seed 1337
+  input (left=2147483647, right=1)
+  repro: ast fuzz "bounded integer addition" --seed 1337
 ```
 
-## Crash Artifacts
+## Two ways to replay
 
-Crash metadata is written under the configured `crashDir`, which defaults to `./.as-test/crashes`.
+**By seed** — re-run the whole campaign deterministically by pinning the base seed:
 
-Each failure record includes:
+```bash
+ast fuzz "bounded integer addition" --seed 1337
+ast test --fuzz --fuzz-seed 1337
+```
 
-- mode
-- first failing seed
-- repro command
-- first assertion failure details
-- the list of failing seeds and captured inputs
+**By artifact** — each failing input is written under the configured `crashDir` (default `.as-test/crashes`) as a crash record containing the seed, the failing input, and the full failure list. Keep these in version control to guard against regressions.
+
+## Crash artifacts
+
+| Field | Contents |
+| --- | --- |
+| `failure` | The first failing run: its seed and input. |
+| `failures` | Every failure observed in the campaign. |
+
+Artifacts live in `fuzz.crashDir`; the seed corpus lives in `fuzz.corpusDir`. A full `ast clean` clears the crash directory. See [Configuration → fuzz](../configuration#fuzz).
+
+## Tightening the loop
+
+- Pin the seed (`--seed`) while you debug so each run is identical.
+- Narrow with `--fuzzer <name>` to replay a single target.
+- Once fixed, keep the crashing seed in a regression test or in the corpus so it keeps getting exercised.

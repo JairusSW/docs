@@ -1,36 +1,29 @@
 # Reporters
 
-`as-test` ships with a built-in default reporter and a built-in TAP reporter.
+A reporter turns run events into output. `as-test` ships two — a human-readable `default` and `tap` — and accepts custom reporter modules.
 
-It also supports custom reporters loaded from a module path.
+## Built-in reporters
 
-## Built-in Reporters
-
-- `default`
-- `tap`
-
-CLI examples:
+| Reporter | Output |
+| --- | --- |
+| `default` | Human-readable progress, per-suite results, coverage summary. |
+| `tap` | [TAP](https://testanything.org/) version 13, for CI and TAP consumers. |
 
 ```bash
-ast test
-ast test --tap
+ast test                 # default
 ast test --reporter tap
-ast run --reporter ./scripts/my-reporter.mjs
+ast test --tap           # shortcut for --reporter tap
 ```
 
-## Configuring A Reporter
+## Configuring a reporter
 
-String form:
+String form selects a built-in or a module path:
 
 ```json
-{
-  "runOptions": {
-    "reporter": "default"
-  }
-}
+{ "runOptions": { "reporter": "tap" } }
 ```
 
-Object form:
+Object form passes options. The TAP reporter supports `single-file` (default) and `per-file` output, with `outDir` / `outFile` controlling where it lands:
 
 ```json
 {
@@ -44,21 +37,49 @@ Object form:
 }
 ```
 
-Supported TAP options:
+| Field | Purpose |
+| --- | --- |
+| `name` | `"default"`, `"tap"`, or a module path. |
+| `options` | Reporter-specific flags (TAP: `single-file` \| `per-file`). |
+| `outDir` | Output directory (TAP; defaults to `./.as-test/reports`). |
+| `outFile` | Output file for TAP single-file mode. |
 
-- `single-file`
-- `per-file`
+## Custom reporters
 
-Defaults:
+Point `name` (or `--reporter`) at a module path. `as-test` resolves it and calls its `createReporter` factory, which returns an object implementing the reporter interface. Implement only the hooks you care about:
 
-- TAP output directory: `./.as-test/reports`
-- TAP output file in single-file mode: `./.as-test/reports/report.tap`
+```ts
+// my-reporter.ts
+export function createReporter(context) {
+  return {
+    onRunStart(event) {},
+    onFileStart(event) {},
+    onSuiteStart(event) {},
+    onSuiteEnd(event) {},
+    onAssertionFail(event) {},
+    onSnapshotMissing(event) {},
+    onWarning(event) {},
+    onLog(event) {},
+    onFileEnd(event) {},
+    onRunComplete(event) {},
+    flush() {},
+  };
+}
+```
 
-## Custom Reporter Modules
+```json
+{ "runOptions": { "reporter": "./tools/my-reporter.js" } }
+```
 
-Custom reporters are loaded from a module path and must export a factory as either:
+| Hook | Fires |
+| --- | --- |
+| `onRunStart` | once, before any file runs |
+| `onFileStart` / `onFileEnd` | around each spec file |
+| `onSuiteStart` / `onSuiteEnd` | around each suite |
+| `onAssertionFail` | on a failing assertion |
+| `onSnapshotMissing` | when a snapshot has no baseline |
+| `onWarning` / `onLog` | on warnings and `log()` output |
+| `onRunComplete` | once, with the final aggregated results |
+| `flush` | at the end, to write buffered output |
 
-- `createReporter`
-- the module default export
-
-The runtime resolves the path relative to the config file when it is not absolute.
+All hooks are optional. Use `onRunComplete` for summary output and `flush` to write files.

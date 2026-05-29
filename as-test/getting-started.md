@@ -8,19 +8,15 @@ Add `as-test` to an AssemblyScript project:
 npm install --save-dev as-test
 ```
 
-`as-test` is self-contained — value serialization for assertions, snapshots,
-and `log()` is built in, so there are no required peer dependencies. (If you
-want `json-as`-style output for one of your classes you can still add your own
-`toJSON()` and wire up `--transform json-as`; as-test itself no longer depends
-on it.)
+`as-test` is self-contained — value serialization for assertions, snapshots, and `log()` is built in, so there are no required peer dependencies.
 
-If you are upgrading to `1.1.0`, refresh generated runners with:
+The WASI target additionally needs `@assemblyscript/wasi-shim`:
 
 ```bash
-rm -rf .as-test/runners && npx as-test init
+npm install --save-dev @assemblyscript/wasi-shim
 ```
 
-## Scaffold A Project
+## Scaffold a project
 
 The fastest path is the initializer:
 
@@ -28,52 +24,62 @@ The fastest path is the initializer:
 npx ast init
 ```
 
-Useful variants:
-
-```bash
-npx ast init --dir .
-npx ast init --target wasi
-npx ast init --target bindings
-npx ast init --target web
-npx ast init --fuzz-example
-npx ast init --yes
-```
-
 `ast init` can create:
 
 - `as-test.config.json`
-- default runner scripts under `.as-test/runners/`
-- a sample spec
-- an optional sample fuzzer
+- runner scripts under `.as-test/runners/`
+- a sample spec in `assembly/__tests__/`
+- an optional sample fuzzer in `assembly/__fuzz__/`
 - `assembly/tsconfig.json`
 
-## Run The Suite
+Useful flags:
 
-Run normal specs:
-
-```bash
-npx ast test
-```
-
-Run the suite through the ordered file worker pool:
-
-```bash
-npx ast test --parallel
-```
-
-Run fuzzers only:
+| Flag | Effect |
+| --- | --- |
+| `--target <wasi\|bindings\|web>` | Set the build target (default `wasi`). |
+| `--example <minimal\|full\|none>` | Choose the sample spec, or skip it. |
+| `--fuzz-example` / `--no-fuzz-example` | Include or omit the sample fuzzer. |
+| `--enable <list>` | Turn on features at scaffold time (e.g. `coverage`, `try-as`). |
+| `--dir <path>` | Scaffold into a specific directory. |
+| `--install` | Install dependencies after scaffolding. |
+| `--yes`, `-y` | Accept defaults; no prompts. |
+| `--force` | Overwrite managed files. |
 
 ```bash
-npx ast fuzz
+npx ast init --target bindings --example full --fuzz-example --yes
 ```
 
-Run specs and fuzzers together:
+## Your first spec
+
+A spec is any file matched by `input` (default `assembly/__tests__/*.spec.ts`). Register suites, assert with `expect`, and end with `run()`:
+
+```ts
+import { describe, expect, test } from "as-test";
+
+describe("example", () => {
+  test("adds numbers", () => {
+    expect(1 + 2).toBe(3);
+  });
+});
+```
+
+> `run()` is called for you when a spec defines suites but never calls it. Add an explicit `run()` only when you need to pass [`RunOptions`](./writing-tests#logging).
+
+## Run the suite
 
 ```bash
-npx ast test --fuzz
+npx ast test            # build + run every spec
+npx ast test --parallel # spread files across a worker pool
+npx ast fuzz            # run fuzz targets only
+npx ast test --fuzz     # run specs, then fuzzers
+npx ast test --watch    # re-run on change
 ```
 
-## Minimal Config
+`ast test` compiles each spec with the AssemblyScript compiler (running the `as-test` transform), then executes the resulting wasm through the configured runtime. See the [CLI reference](./cli) for the full flag set.
+
+## Minimal config
+
+`ast init` writes this for you, but the whole thing fits in a few lines:
 
 ```json
 {
@@ -90,9 +96,9 @@ npx ast test --fuzz
 }
 ```
 
-## What To Read Next
+## Next
 
-- [Writing Tests](./writing-tests)
-- [Assertions](./assertions/)
-- [Fuzzing](./fuzzing/)
-- [Configuration](./configuration)
+- [Writing Tests](./writing-tests) — the full authoring surface.
+- [Assertions](./assertions/) — every matcher.
+- [Runtimes & Modes](./runtimes/) — run the same specs on more than one runtime.
+- [Configuration](./configuration) — every config field.

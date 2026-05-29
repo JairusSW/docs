@@ -1,184 +1,147 @@
 # Writing Tests
 
-## Basic Spec
+A spec imports the APIs it needs from `as-test`, registers suites, and ends with `run()`. Everything in this page is exported from the package root.
 
 ```ts
 import { describe, expect, test } from "as-test";
 
 describe("math", () => {
-  test("adds numbers", () => {
-    expect(1 + 2).toBe(3);
+  test("addition", () => {
+    expect(2 + 2).toBe(4);
   });
 });
 ```
 
-You do not need to call `run()` manually in normal spec files.
+## Suites and test cases
 
-## Suite And Test APIs
-
-Available top-level registration helpers:
-
-- `describe(name, callback)`
-- `test(name, callback)`
-- `it(name, callback)`
-- `only(name, callback)`
-- `xonly(name, callback)`
-- `todo(name)`
-- `xdescribe(name, callback)`
-- `xtest(name, callback)`
-- `xit(name, callback)`
-
-Hooks:
-
-- `beforeAll(callback)`
-- `afterAll(callback)`
-- `beforeEach(callback, kinds?)`
-- `afterEach(callback, kinds?)`
-
-Assertion entry point:
-
-- `expect(value, message?, location?)`
-- `xexpect(value, message?, location?)`
-
-## Suites And Tests
-
-Every grouping block — `describe`, `test`, `it`, `only` (and their skip
-variants) — is a **suite**. Each `expect()` call is a **test**. So a block that
-contains five assertions reports as one suite with five tests, and an empty
-block is just a suite with no tests.
-
-Blocks nest to any depth — a `describe`/`test`/`it` declared inside another
-block becomes a child of it:
+`describe`, `test`, and `it` all register a block with a description and a callback. `test` and `it` are interchangeable — use whichever reads better. Nest `describe` blocks to group related cases.
 
 ```ts
-import { describe, expect, it } from "as-test";
+import { describe, expect, it, test } from "as-test";
 
-describe("parser", () => {
-  describe("numbers", () => {
-    it("parses integers", () => {
-      expect(parseInt("42")).toBe(42);
-    });
+describe("strings", () => {
+  it("contains", () => {
+    expect("assemblyscript").toContain("script");
+  });
+
+  test("prefix", () => {
+    expect("as-test").toStartWith("as");
   });
 });
 ```
 
-## Hooks Example
+| Function | Signature | Purpose |
+| --- | --- | --- |
+| `describe` | `describe(description, callback)` | Group related cases. |
+| `test` | `test(description, callback)` | A single test case. |
+| `it` | `it(description, callback)` | Alias for `test`. |
+
+A suite passes when every assertion inside it passes. Assertions are independent — a later one still runs after an earlier one fails — so a single test can report multiple failures at once.
+
+## Focus, skip, and todo
+
+Prefix with `x` to skip, use `only` to focus, and `todo` to leave a placeholder.
 
 ```ts
-import { beforeEach, describe, expect, test } from "as-test";
+only("runs in isolation", () => { /* ... */ });   // only focused cases run
+xtest("temporarily disabled", () => { /* ... */ });
+xdescribe("disabled group", () => { /* ... */ });
+todo("write the overflow case");                   // no callback
+```
 
-let value = 0;
+| Function | Behavior |
+| --- | --- |
+| `only` | Focus this case; when any `only` exists, only focused cases run. |
+| `xtest`, `xit` | Skip this case. |
+| `xdescribe` | Skip this group. |
+| `xonly` | A focused case that is also skipped. |
+| `todo` | Record an unwritten case (description only). |
 
-beforeEach(() => {
-  value = 41;
-});
+You can also skip a single assertion with `xexpect(...)` or `expect(...).skip()`.
+
+## Hooks
+
+Lifecycle hooks run setup and teardown around your blocks.
+
+```ts
+import { afterEach, beforeEach, describe, expect, test } from "as-test";
+
+let count = 0;
+
+beforeEach(() => { count = 0; });
+afterEach(() => { /* assert invariants, clean up */ });
 
 describe("counter", () => {
   test("increments", () => {
-    value++;
-    expect(value).toBe(42);
+    count++;
+    expect(count).toBe(1);
   });
 });
 ```
 
-By default `beforeEach`/`afterEach` run around each test case (`test`, `it`,
-`only`, and their skip variants) and **not** around grouping blocks like
-`describe`. Pass an optional list of suite kinds to run around exactly those
-kinds instead:
+| Hook | Signature | Runs |
+| --- | --- | --- |
+| `beforeAll` | `beforeAll(callback)` | Once before each group is run. |
+| `afterAll` | `afterAll(callback)` | Once after each group is run. |
+| `beforeEach` | `beforeEach(callback, kinds?)` | Before every matching block. |
+| `afterEach` | `afterEach(callback, kinds?)` | After every matching block. |
+
+By default `beforeEach` / `afterEach` fire around **test cases** (`test`, `it`, `only`, and their skip variants), not around `describe` groups. Pass an explicit `kinds` array to change what they wrap:
 
 ```ts
-// Run before every `describe` AND every `test`.
-beforeEach(() => {
-  /* ... */
-}, ["describe", "test"]);
-
-// Run after each `test` only.
-afterEach(() => {
-  /* ... */
-}, ["test"]);
+beforeEach(() => { /* ... */ }, ["describe", "test"]);
 ```
+
+> `beforeAll` and `afterAll` each hold a single callback — calling them again replaces the previous one rather than queuing another.
 
 ## Logging
 
-Use `log(value)` inside a test to capture a value. Anything `expect()` can
-serialize is supported — primitives, strings, arrays, `Map`, `Set`, `Date`,
-`ArrayBuffer`, typed arrays, and classes (via a generated or hand-written
-`toJSON()`):
+`log(value)` formats any value and prints it during the run. It uses the same serializer as assertions and snapshots, so objects, arrays, and classes with `toJSON()` render the way you'd expect.
 
 ```ts
-import { describe, expect, it, log } from "as-test";
+import { log } from "as-test";
 
-describe("user", () => {
-  it("builds a profile", () => {
-    const profile = makeProfile();
-    log(profile);
-    expect(profile.id).toBe(7);
-  });
+log("checkpoint");
+log([1, 2, 3]);
+```
+
+Captured output is written under the configured `logs` directory. To silence `log()` for a run, pass `RunOptions` to an explicit `run()`:
+
+```ts
+import { run } from "as-test";
+
+run({ log: false });
+```
+
+## Reading the active mode
+
+A spec can tell which [mode](./runtimes/multiple-runtimes) it is running under via the exported `mode` value (and the `AS_TEST_MODE_NAME` constant). This is useful for guarding runtime-specific assertions:
+
+```ts
+import { expect, mode, test } from "as-test";
+
+test("uses the active runtime", () => {
+  if (mode == "node:wasi") {
+    // assertions that only hold under WASI
+  }
+  expect(true).toBe(true);
 });
 ```
 
-After a run, as-test reports how many logs were captured and writes them to
-`.as-test/logs/latest.log`, grouped by spec and de-duplicated across modes. Pass
-`--show-logs` to print them at the end of the run instead. See the [CLI](./cli)
-page.
+## Filtering what runs
 
-## Focus, Skip, And Todo
-
-```ts
-import { only, test, todo, xtest } from "as-test";
-
-only("run just this top-level case", () => {});
-xtest("skip this case", () => {});
-todo("implement parser edge cases");
-```
-
-`only(...)` is top-level focused execution. `xonly(...)` is the skipped version of that placeholder.
-
-## Selectors
-
-Run everything:
+You rarely need to edit specs to run a subset — the CLI does it for you:
 
 ```bash
-ast test
+ast test math                      # only files matching "math"
+ast run expectation --suite "expectations/toBe"   # one suite by slug
 ```
 
-Run by bare selector:
+See [Selectors](./cli#selectors) for the full matching rules.
 
-```bash
-ast test math
-```
+## Related
 
-Run several selectors:
-
-```bash
-ast test math,array,string
-```
-
-Run one suite inside a selected file:
-
-```bash
-ast run math --suite array-check
-ast run math --suite array-manipulation/array-check
-```
-
-Run explicit paths or globs:
-
-```bash
-ast test ./assembly/__tests__/math.spec.ts
-ast test "./assembly/__tests__/*.spec.ts"
-```
-
-Bare selectors resolve against your configured `input` globs.
-
-`--suite` and `--suites` filter the reported result to matching suite names:
-
-- bare names like `array-check` match the shallowest unique suite slug
-- slash paths like `array-manipulation/array-check` match the full suite path
-- commas select several suite targets at once
-
-## Related Guides
-
-- [Assertions](./assertions/)
-- [Snapshots](./snapshots)
-- [Mocking](./mocking/)
-- [CLI](./cli)
+- [Assertions](./assertions/) — every matcher and modifier.
+- [Snapshots](./snapshots) — assert against stored output.
+- [Mocking](./mocking/) — replace functions and imports.
+- [CLI](./cli) — filtering, watch mode, and flags.

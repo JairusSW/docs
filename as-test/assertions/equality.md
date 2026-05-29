@@ -1,98 +1,62 @@
-# Equality Matchers
+# Equality
 
-`as-test` has three equality matchers with intentionally different semantics.
+Three matchers compare values; pick by how strict you need to be.
 
-## `toBe`
-
-`toBe` checks identity or exact primitive equality.
-
-```ts
-expect(1 + 2).toBe(3);
-expect(name).toBe("demo");
-```
-
-Use `toBe` when you mean:
-
-- primitive equality
-- pointer identity
-- exact same managed instance
-
-## `toEqual`
-
-`toEqual` performs deep equality.
+| Matcher | Compares | Use when |
+| --- | --- | --- |
+| `toBe(expected)` | Deep structural equality (`===` for primitives) | The default — works for primitives, strings, and managed objects. |
+| `toEqual(expected)` | Same as `toBe` | You prefer the Jest spelling. |
+| `toStrictEqual(expected)` | Deep equality **and** matching runtime type | Subclasses must not be treated as equal to their base. |
 
 ```ts
-expect([1, 2, 3]).toEqual([1, 2, 3]);
+expect(1 + 1).toBe(2);
+expect("a" + "b").toBe("ab");
+expect(new Point(1, 2)).toEqual(new Point(1, 2));
 ```
 
-For managed values this is a structural, field-by-field comparison (with cycle
-detection). as-test generates the comparison automatically for any class that
-appears in an equality matcher — including nested classes reachable through its
-fields — so you don't need `json-as` or a hand-written method. If you do declare
-your own `__as_test_equals`, the transform leaves it alone.
+## `toBe` and `toEqual`
+
+`toBe` compares primitives and strings by value and managed objects by walking their structure, so two distinct instances with equal fields are equal. `toEqual` is an alias — identical behavior, provided for familiarity.
+
+```ts
+expect(new Point(1, 2)).toBe(new Point(1, 2)); // passes — same structure
+```
 
 ## `toStrictEqual`
 
-`toStrictEqual` performs deep equality with runtime-type matching for managed values.
+`toStrictEqual` adds a runtime-type check on top of structural equality. Two objects must share the same concrete type to be strictly equal, which distinguishes subclasses that would otherwise compare equal:
 
 ```ts
-expect(actualUser).toStrictEqual(expectedUser);
-```
+class Shape { size: i32 = 0; }
+class Circle extends Shape {}
 
-This is stricter than `toEqual` because managed values also have to agree on runtime type identity.
+expect<Shape>(new Circle()).toBe(new Shape());        // passes — same fields
+expect<Shape>(new Circle()).not.toStrictEqual(new Shape()); // different types
+```
 
 ## `toBeNull`
 
-`toBeNull` checks nullable values, and also treats `usize(0)` as null-like in the runtime helper.
+Asserts a nullable reference (or a `usize`) is null:
 
 ```ts
-expect<string | null>(null).toBeNull();
+expect(maybeUser).toBeNull();
+expect(found).not.toBeNull();
 ```
 
-## Choosing Between Them
+## How values are rendered
 
-- Use `toBe` for identity or plain primitive equality.
-- Use `toEqual` for deep structural comparisons.
-- Use `toStrictEqual` when runtime type mismatches should fail even if the shape matches.
+When an equality assertion fails, both sides are serialized with the built-in formatter — the same one used by [`log()`](../writing-tests#logging) and [snapshots](../snapshots). Classes that define `toJSON()` render through it, which keeps failure output readable.
 
-## Custom Predicates with `.where()`
+## Closures and captured values
 
-When none of the above match the comparison you actually need — for example, asserting equality against a reference JS implementation by way of a hand-written deep-compare — use `.where()`. It accepts either a bool or a `() => bool` lambda:
+AssemblyScript does not capture local variables in closures the way TypeScript does. When you need a computed condition, prefer a direct matcher, or read from fields / module scope inside [`.where()`](./#custom-predicates-with-where):
 
 ```ts
-// bool form: predicate is inlined at the call site
-expect(x).where(x > 0 && x < 10);
+// Avoid: the lambda cannot see `expected`
+// expect(actual).where((): bool => actual == expected);
 
-// lambda form: predicate is evaluated lazily
-expect(actual).where((): bool => deepCompare(GLOBAL_A, GLOBAL_B));
+let expected = 42;            // module scope
+expect(actual).where((): bool => actual == expected);
 ```
 
-`.where()` is a regular matcher, so it chains and negates like any other:
-
-```ts
-expect(parsed).toBeArray().where((): bool => allDistinct());
-expect(value).not.where((): bool => isBlacklisted());
-```
-
-The recorded failure is `expected "true", received "false"` — the subject value itself isn't serialized into the report because `.where()` is generic over the predicate, not the subject.
-
-### Closures and the lambda form
-
-AssemblyScript does not yet implement closures, so the lambda passed to `.where()` cannot capture local variables from the enclosing scope. Two practical workarounds:
-
-- Use the **bool form** when the predicate is built from locals — it's a plain expression evaluated at the call site.
-- Use the **lambda form** when the predicate calls module-level functions or reads module-level values.
-
-```ts
-const REF: Point = new Point(3, 4);
-
-function matchesRef(actual: Point): bool {
-  return actual.x == REF.x && actual.y == REF.y;
-}
-
-test("custom verdict via lambda", () => {
-  const actual = parsePoint(input);
-  // bool form — references the local `actual` directly.
-  expect(actual).where(matchesRef(actual));
-});
-```
+For structural comparisons, reach for `toBe` / `toStrictEqual` rather than hand-rolling equality in `.where()`.

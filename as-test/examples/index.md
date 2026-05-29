@@ -1,12 +1,12 @@
-# Examples
+# Recipes
 
-This section shows a few practical `as-test` patterns you can copy into a project and adapt.
+Short, copy-pasteable patterns that combine the pieces from the rest of the docs. Each one is a complete, runnable starting point.
 
-## Example Pages
+| Recipe | Shows |
+| --- | --- |
+| [Minimal Spec](./minimal-spec) | The smallest passing test and how to run it. |
+| [Snapshots & Mocks](./snapshots-and-mocks) | Freezing a dependency, then snapshotting the output. |
+| [Fuzzing Patterns](./fuzzing-patterns) | Property tests and keeping generators clean. |
+| [Multi-Mode Config](./multi-mode-config) | One suite across WASI, bindings, and the browser. |
 
-- [Minimal Spec](./minimal-spec)
-- [Snapshots And Mocks](./snapshots-and-mocks)
-- [Fuzzing Patterns](./fuzzing-patterns)
-- [Multi-Mode Config](./multi-mode-config)
-
-The repo also includes standalone runnable example projects under `examples/`.
+For larger, end-to-end setups, the [as-test repository](https://github.com/JairusSW/as-test) keeps standalone example projects you can clone and run.

@@ -1,81 +1,83 @@
 # Assertions
 
-Assertions start from `expect(value, message?, location?)`.
-
-Basic example:
+Every assertion starts with `expect(value)` and chains a matcher:
 
 ```ts
-import { expect, test } from "as-test";
-
-test("example", () => {
-  expect(1 + 2).toBe(3);
-  expect("hello").toStartWith("he");
-  expect([1, 2, 3]).toContain(2);
-});
+expect(2 + 2).toBe(4);
+expect("as-test").toStartWith("as");
+expect([1, 2, 3]).toHaveLength(3);
 ```
+
+`expect<T>(value)` returns a chainable `Expectation<T>`. Each matcher returns the same expectation, so you can apply several in a row. Matchers run independently — one failing does not stop the next — and the source location of each is injected automatically so failures point at the right line.
 
 ## Negation
 
-Use `.not` before a matcher:
+`.not` flips the next matcher:
 
 ```ts
-expect(1).not.toBe(2);
-expect("hello").not.toEndWith("xx");
+expect(value).not.toBe(null);
+expect(name).not.toContain(" ");
 ```
+
+`.not` applies to the matcher that immediately follows it and resets afterward, so `expect(x).not.toBe(a).toBe(b)` negates only the first.
 
 ## Messages
 
-The optional second argument becomes the failure message when the matcher fails:
+Most matchers accept a trailing message used in the failure report:
 
 ```ts
-expect(total, "sum should stay stable").toBe(42);
+expect(user.age).toBeGreaterThan(17, "users must be adults");
 ```
 
 ## Chaining
 
-Every matcher returns the `Expectation`, so multiple checks can chain off one `expect(...)`:
+Because every matcher returns the expectation, assertions compose:
 
 ```ts
-expect(7).toBe(7).where((): bool => isFresh());
-expect("as-test").toBeString().toStartWith("as");
-expect(10).toBeGreaterThan(5).toBeLessThan(100);
+expect(score)
+  .toBeNumber()
+  .toBeGreaterOrEqualTo(0)
+  .toBeLessThanOrEqualTo(100);
 ```
 
-Each link in the chain is an **independent assertion** — the test fails if any of them fail. There is no priority; they are peers. A failing matcher does not stop later matchers in the same chain from running, and a later passing matcher cannot un-fail an earlier one.
+## Custom predicates with `.where()`
 
-`.not` resets after each matcher, so it only applies to the matcher immediately following it:
+When no built-in matcher fits, `.where()` asserts an arbitrary condition. It accepts either a `bool` or a `() => bool` lambda:
 
 ```ts
-expect(7).not.toBe(8).toBeGreaterThan(5); // not toBe(8), and > 5
+expect(point).where((): bool => point.x == point.y, "x must equal y");
 ```
 
-## Custom Predicates with `.where()`
+A `.where()` clause is evaluated independently from the rest of the chain, so it composes with other matchers on the same expectation.
 
-`.where()` accepts either a bool or a `() => bool` lambda. Use it when the verdict isn't expressible via the built-in matchers — for example, delegating to a hand-written comparator:
+> AssemblyScript closures cannot capture local variables the way TypeScript does. If a `.where()` lambda needs a value, read it from a field or module-scope binding rather than a captured local. The same constraint shapes the [equality matchers](./equality#closures-and-captured-values).
+
+## Skipping an assertion
+
+Skip a single expectation without removing it:
 
 ```ts
-expect(x).where(x > 0 && x < 10);
-expect(actual).where((): bool => deepCompare(GLOBAL_A, GLOBAL_B));
+expect(flaky).skip().toBe(true); // recorded as skipped
+xexpect(flaky).toBe(true);        // same thing
 ```
 
-The lambda runs once and must return `bool`. AssemblyScript does not implement closures, so the lambda cannot capture local variables — use the bool form when the predicate references locals, or refer to module-level values from inside the lambda.
+## Matcher groups
 
-See [Equality → Custom Predicates with `.where()`](./equality#custom-predicates-with-where) for the full reference.
+| Group | Matchers |
+| --- | --- |
+| [Equality](./equality) | `toBe`, `toEqual`, `toStrictEqual`, `toBeNull` |
+| [Numbers](./numbers) | `toBeGreaterThan`, `toBeGreaterOrEqualTo`, `toBeLessThan`, `toBeLessThanOrEqualTo`, `toBeCloseTo`, `toBeFinite`, `toBeInteger`, `toBeFloat`, `toBeNumber` |
+| [Types & truthiness](./types-and-truthiness) | `toBeString`, `toBeBoolean`, `toBeArray`, `toBeNumber`, `toBeTruthy`, `toBeFalsy` |
+| [Strings & collections](./strings-and-collections) | `toMatch`, `toStartWith`, `toEndWith`, `toHaveLength`, `toContain`, `toContains` |
+| [Snapshots & throws](./snapshots-and-throws) | `toMatchSnapshot`, `toThrow` |
 
-## Matcher Groups
+## Assertions inside fuzzers
 
-- [Equality](./equality)
-- [Numbers](./numbers)
-- [Types And Truthiness](./types-and-truthiness)
-- [Strings And Collections](./strings-and-collections)
-- [Snapshots And Throws](./snapshots-and-throws)
+The same matchers work inside [fuzz](../fuzzing/) callbacks. A failing assertion fails that fuzz run and the failing seed is reported for [reproduction](../fuzzing/failure-reproduction):
 
-## Fuzzing Interaction
-
-Inside a fuzzer:
-
-- failed `expect(...)` calls fail the current fuzz iteration
-- they are counted in the fuzz result, not the normal test totals
-- the first failure details are recorded in the fuzz report
-
-See [Fuzzing](../fuzzing/) for how failures and repro commands are reported.
+```ts
+fuzz("sum is reversible", (a: i32, b: i32): bool => {
+  expect(a + b - b).toBe(a);
+  return true;
+}).generate((seed, run) => run(seed.i32(), seed.i32()));
+```

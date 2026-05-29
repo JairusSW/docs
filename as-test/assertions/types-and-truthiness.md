@@ -1,38 +1,48 @@
-# Types And Truthiness
+# Types & Truthiness
 
-These matchers are useful when the exact value matters less than the kind of value.
+## Type matchers
 
-## Type Matchers
+Type matchers confirm the compile-time type of the expression. They resolve during compilation, so they are effectively free at runtime.
 
 ```ts
-expect(label).toBeString();
-expect(flag).toBeBoolean();
-expect(items).toBeArray();
+expect("hello").toBeString();
+expect(true).toBeBoolean();
+expect([1, 2, 3]).toBeArray();
+expect(42).toBeNumber();
 ```
 
-Available methods:
-
-- `toBeString()`
-- `toBeBoolean()`
-- `toBeArray()`
+| Matcher | Passes when the value is |
+| --- | --- |
+| `toBeString()` | a string |
+| `toBeBoolean()` | a boolean |
+| `toBeArray()` | an array |
+| `toBeNumber()` | an integer or float (see [Numbers](./numbers)) |
 
 ## Truthiness
 
+`toBeTruthy` and `toBeFalsy` apply AssemblyScript's truthiness rules to any value:
+
 ```ts
-expect(result).toBeTruthy();
-expect(optionalValue).toBeFalsy();
+expect(1).toBeTruthy();
+expect("non-empty").toBeTruthy();
+expect(0).toBeFalsy();
+expect("").toBeFalsy();
+expect(<string | null>null).toBeFalsy();
 ```
 
-Available methods:
+| Value | Truthy? |
+| --- | --- |
+| non-zero number | yes |
+| `0`, `NaN` | no |
+| non-empty string | yes |
+| empty string | no |
+| non-null reference | yes |
+| `null` | no |
+| `true` / `false` | as written |
 
-- `toBeTruthy()`
-- `toBeFalsy()`
+Combine with `.not` when an explicit negative reads better than a `toBeFalsy`:
 
-Truthiness follows the runtime helper behavior:
-
-- `false` is falsy
-- empty strings are falsy
-- `0` and `0.0` are falsy
-- `NaN` is falsy
-- `null` is falsy
-- other managed values are truthy
+```ts
+expect(handle).not.toBeNull();
+expect(items.length).toBeTruthy();
+```

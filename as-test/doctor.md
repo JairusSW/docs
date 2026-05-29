@@ -1,30 +1,35 @@
 # Doctor
 
-Use `ast doctor` when setup feels wrong before you start debugging tests themselves.
+`ast doctor` validates that a project is set up to build and run, without actually running the suite. Reach for it first when something won't start.
 
 ```bash
 ast doctor
-ast doctor --config ./as-test.config.json
-ast doctor --mode wasi,bindings
+ast doctor --mode node:bindings
+ast doctor --config ./as-test.ci.config.json
 ```
 
-## What It Checks
+## What it checks
 
-- config validation
-- discovered spec files
-- dependency availability
-- runtime command shape
-- runner existence for default runtime paths
-- mode-specific setup problems
+- **Config** — `as-test.config.json` exists and parses.
+- **Node** — the running Node version is supported.
+- **`assemblyscript`** — the compiler is installed in the project.
+- **Per mode** — each selected mode merges cleanly, and:
+  - for the `wasi` target, `@assemblyscript/wasi-shim` is installed;
+  - the runtime command resolves (the runner exists or can be generated);
+  - the `input` globs actually match files.
 
-## When To Reach For It
+It exits non-zero if any check fails, so it works as a CI preflight.
 
-Use `ast doctor` when you see:
+## When to reach for it
 
-- config parse errors
-- no files discovered
-- bad runtime commands
-- missing generated runner scripts
-- target-specific setup mismatches
+- After `ast init`, to confirm the scaffold is complete.
+- When a runtime command or runner path looks wrong.
+- When the WASI target fails because `@assemblyscript/wasi-shim` is missing.
+- When `input` matches nothing and a run reports zero files.
+- In CI, before `ast test`, to fail fast with a clear message.
 
-It is the quickest way to get a path-specific validation error instead of guessing which field is wrong.
+## Related
+
+- [Getting Started](./getting-started) — scaffolding.
+- [Configuration](./configuration) — the fields doctor validates.
+- [Runtimes & Modes](./runtimes/) — targets and runner commands.

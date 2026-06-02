@@ -133,11 +133,12 @@ test("uses the active runtime", () => {
 You rarely need to edit specs to run a subset — the CLI does it for you:
 
 ```bash
-ast test math                      # only files matching "math"
+ast test math                      # the spec named "math"
+ast test rfc/                       # every spec under an rfc/ folder
 ast run expectation --suite "expectations/toBe"   # one suite by slug
 ```
 
-See [Selectors](./cli#selectors) for the full matching rules.
+See [Selectors](./cli#selectors) for folders, globs, and the full resolution rules.
 
 ## Related
 

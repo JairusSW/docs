@@ -26,7 +26,7 @@ ast <command> --help
 
 ```bash
 ast test                       # build + run every spec
-ast test math                  # only files matching "math"
+ast test math                  # the spec named "math"
 ast test --parallel            # spread files across workers
 ast test --watch               # re-run on change
 ast test --mode node:bindings  # run a specific mode
@@ -117,13 +117,33 @@ Both take `--config` and `--mode`. `doctor` validates the project ([Doctor](./do
 
 ## Selectors
 
-A positional argument filters which **files** run by substring; `--suite` filters which **suites** run within them by name or slug path.
+A positional argument selects which **files** run; `--suite` filters which **suites** run within them by name or slug path.
+
+Selectors resolve against your configured `input` root(s) — the static prefix of each `input` glob, e.g. `assembly/__tests__` — searched recursively, and fall back to the current directory if nothing matched there.
+
+| You type | Resolves to |
+| --- | --- |
+| `foo` | `<root>/**/foo.spec.ts` (a spec by name) |
+| `rfc/` | `<root>/**/rfc/**/*.spec.ts` (every spec under a folder) |
+| `rfc/*.spec.ts` | `<root>/**/rfc/*.spec.ts` (your glob, anchored to the test folder) |
+| `*.spec.ts` | every spec under the root |
+| `./rfc/*.spec.ts` | matched from the **current directory** only (leading `./`, `/`, or `~`) |
+| `a,b` | two selectors, `a` and `b` |
 
 ```bash
-ast test expectation                         # files matching "expectation"
-ast run expectation --suite "expectations/toBe"  # one suite by slug
-ast fuzz --fuzzer "addition"                 # fuzz targets by name
+ast test expectation                             # the spec named "expectation"
+ast test rfc/                                     # every spec under an rfc/ folder
+ast test 'rfc/*.spec.ts'                          # quote globs so the shell doesn't expand them
+ast run expectation --suite "expectations/toBe"   # one suite by slug
+ast fuzz --fuzzer "addition"                      # fuzz targets by name
 ```
+
+Notes:
+
+- A selector that matches nothing prints a `WARN` naming where it looked; a `./`-prefixed miss suggests the test-folder form (`did you mean "rfc/*.spec.ts"`).
+- A bare selector that matches under more than one configured `input` root prints a `WARN` and runs all of them.
+- Selectors intentionally bypass `!`-negations in `input`, so an explicit pick always wins.
+- Use `--list` to preview what a selector resolves to without running anything.
 
 ## Web modes
 

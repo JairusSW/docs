@@ -116,6 +116,17 @@ fine.)
 
 ## Caveats
 
+- **Object-literal initialization isn't supported.** A lazy field becomes a
+  get/set accessor, and AssemblyScript's object-literal class init
+  (`const r: Repo = { … }`) doesn't support accessors. Construct with `new` +
+  assignment (which goes through the setter), or use `JSON.parse`:
+
+  ```ts
+  const repo = new Repo();
+  repo.name = "json-as";
+  repo.owner = owner; // setter
+  ```
+
 - A struct keeps its source string alive while it lives (the lifetime cost of
   zero-copy). For long-lived objects over huge payloads, read what you need and
   drop the object, or prefer per-field `@lazy` over `all`.

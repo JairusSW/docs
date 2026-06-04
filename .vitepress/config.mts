@@ -82,6 +82,7 @@ export default defineConfig({
               text: "Built-in Subclasses",
               link: "/json-as/guide/built-in-subclasses",
             },
+            { text: "Lazy Fields", link: "/json-as/guide/lazy-fields" },
             { text: "Performance", link: "/json-as/guide/performance" },
             { text: "Decorators", link: "/json-as/reference/decorators" },
             { text: "Dynamic Types", link: "/json-as/reference/dynamic-types" },
@@ -171,6 +172,7 @@ export default defineConfig({
           items: [
             { text: "CLI", link: "/as-test/cli" },
             { text: "Configuration", link: "/as-test/configuration" },
+            { text: "Caching", link: "/as-test/caching" },
             { text: "Coverage", link: "/as-test/coverage" },
             { text: "Reporters", link: "/as-test/reporters" },
             { text: "Doctor", link: "/as-test/doctor" },

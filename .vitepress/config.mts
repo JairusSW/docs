@@ -105,6 +105,21 @@ export default defineConfig({
             },
           ],
         },
+        {
+          text: "Deep Dive",
+          collapsed: false,
+          items: [
+            {
+              text: "Generated Code & the Fast Path",
+              link: "/json-as/deep-dive/codegen",
+            },
+            { text: "The Lazy Slot", link: "/json-as/deep-dive/lazy-slot" },
+            {
+              text: "The Serialization Buffer",
+              link: "/json-as/deep-dive/buffer",
+            },
+          ],
+        },
       ],
       "/as-test/": [
         {

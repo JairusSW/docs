@@ -2,6 +2,8 @@
 
 Fast, type-safe JSON for [AssemblyScript](https://www.assemblyscript.org/).
 
+[GitHub](https://github.com/JairusSW/json-as) · [npm](https://www.npmjs.com/package/json-as) — `npm install json-as`
+
 `json-as` is a compiler **transform**: mark a class `@json` and it generates specialized serialize/deserialize code at build time. No runtime reflection, no hand-written schemas — just `JSON.parse<T>` and `JSON.stringify`, reaching multi-GB/s throughput with SIMD/SWAR scanning.
 
 ```ts
@@ -43,5 +45,13 @@ JSON.stringify(v); // '{"x":1.5,"y":2.5,"z":3.5}'
 - [Dynamic Types](./reference/dynamic-types) — `JSON.Value` / `JSON.Obj` / `JSON.Raw`
 - [Configuration](./reference/customization) — build-time `JSON_*` environment variables
 - [Runtime Behavior](./reference/runtime-behavior) — the shared buffer, `JSON.internal`, `JSON.Memory`
+
+## Deep Dive
+
+How the interesting parts actually work:
+
+- [Generated Code & the Fast Path](./deep-dive/codegen) — what `@json` compiles to
+- [The Lazy Slot](./deep-dive/lazy-slot) — the packed `u64` behind lazy fields
+- [The Serialization Buffer](./deep-dive/buffer) — zero-copy, zero-alloc round-trips
 
 Testing your AssemblyScript too? See [as-test](/as-test/).

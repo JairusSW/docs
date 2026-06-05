@@ -24,6 +24,16 @@ JSON_USE_FAST_PATH=1
 
 Without that environment variable, the default path stays conservative.
 
+## Lazy fields
+
+Deferring fields with [`@lazy` / `JSON.Lazy<T>` / `@json({ lazy })`](/json-as/guide/lazy-fields) skips parsing the fields you don't read — the win grows with payload size, and round-tripping an untouched object just forwards its raw bytes:
+
+![Deserialize: eager vs lazy by payload size](/json-as/bench/lazy-deserialize.png)
+
+![Round-trip: eager vs lazy by payload size](/json-as/bench/lazy-roundtrip.png)
+
+Lazy stays at or below eager across access patterns (read none / one / all / pass through), so the only real trade is module size under `lazy: "all"`. See the [Lazy Fields guide](/json-as/guide/lazy-fields) for the full picture.
+
 ## Benchmark commands
 
 ```bash

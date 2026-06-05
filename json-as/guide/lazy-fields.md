@@ -1,153 +1,85 @@
 # Lazy Fields
 
-A **lazy** field defers parsing. Instead of materializing the value during
-`JSON.parse`, json-as records the field's raw JSON slice and parses it only on
-first access. A field you never read is never parsed; on serialize its original
-bytes pass straight through. Access is fully transparent — a lazy field reads
-and writes exactly like a normal field.
+A **lazy** field defers parsing. Instead of materializing the value during `JSON.parse`, `json-as` records the field's raw JSON slice and parses it only on first access. A field you never read is never parsed; on serialize, an untouched field's original bytes pass straight through. Access is fully transparent — a lazy field reads and writes exactly like a normal one.
 
-This is ideal for large payloads where you only touch a few fields, and for
-proxy / filter / passthrough workloads.
+This is ideal for large payloads where you touch only a few fields, and for proxy / filter / forward workloads.
 
 ## Marking a field
 
-There are two equivalent markers:
+Three equivalent ways, pick whichever reads best:
 
 ```ts
+import { JSON } from "json-as";
+
+@json
+class Owner {
+  id: i32 = 0;
+  login: string = "";
+}
+
 @json
 class Repo {
-  name: string;               // eager (parsed up-front)
-
-  @lazy owner: Owner;         // decorator form
-  files: JSON.Lazy<string[]>; // type-wrapper form
+  name: string = ""; // eager (parsed up front)
+  @lazy owner: Owner = new Owner(); // decorator form
+  files: JSON.Lazy<string[]> = []; // type-wrapper form
 }
 ```
 
 - **`@lazy`** — a bare decorator on the field.
-- **`JSON.Lazy<T>`** — a transparent type alias (`type Lazy<T> = T`), so the
-  field is still typed and used as `T`.
-
-Both lower to the same code, so pick whichever reads better.
+- **`JSON.Lazy<T>`** — a transparent type alias (`type Lazy<T> = T`), so the field is still typed and used as a plain `T`.
 
 ```ts
+const json =
+  '{"name":"x","owner":{"id":5,"login":"ada"},"files":["a.ts","b.ts"]}';
+
 const repo = JSON.parse<Repo>(json);
-repo.name;        // parsed eagerly
-repo.owner.id;    // owner parsed now (and cached)
-// repo.files never read -> never parsed
+repo.name; // "x"      — parsed eagerly
+repo.owner.id; // 5    — owner parsed now (on first read), then cached
+// repo.files is never read here -> never parsed
+
+// An untouched object round-trips by copying its original bytes:
+JSON.stringify(JSON.parse<Repo>(json)); // === json
 ```
 
 ## Class-level modes
 
-Set a default for the whole class with the `@json` config object:
+Set a default for a whole class with the `@json` config object, and override individual fields with `@eager`:
 
 ```ts
 @json({ lazy: "auto" }) // "none" (default) | "auto" | "all"
-class Repo { /* … */ }
-```
-
-- **`none`** *(default)* — only fields with an explicit marker are deferred.
-- **`auto`** — defer the expensive-to-parse fields, keep the cheap ones eager.
-  Deferred: strings, arrays, maps, sets, `JSON.Value`/`Obj`/`Raw`, and
-  non-trivial nested `@json` structs. Kept eager: primitives, enums, `Date`, and
-  tiny all-scalar nested structs (deferring those costs more than it saves).
-- **`all`** — defer every serialized field. Best for proxy/passthrough.
-
-### Per-field overrides
-
-`@eager` opts a single field out of the class default:
-
-```ts
-@json({ lazy: "auto" })
-class Repo {
-  id: i32;             // auto: eager (cheap)
-  owner: Owner;        // auto: deferred
-  @eager hot: Details; // override -> always eager
-  @lazy notes: string; // explicit -> always deferred
+class Doc {
+  id: i32 = 0; // auto: cheap -> stays eager
+  title: string = ""; // auto: deferred
+  tags: string[] = []; // auto: deferred
+  @eager hot: string = ""; // forced eager
 }
 ```
 
-Precedence:
+- **`none`** *(default)* — only fields with an explicit marker are deferred.
+- **`auto`** — defer the expensive-to-parse fields (strings, arrays, maps/sets, `JSON.Value`/`Obj`/`Raw`, non-trivial nested structs) and keep cheap ones eager (primitives, enums, `Date`, tiny all-scalar structs).
+- **`all`** — defer every serialized field. Best for proxy / passthrough.
 
-```
-explicit @lazy / JSON.Lazy<T>   ->  always deferred
-@eager                          ->  always eager
-otherwise                       ->  the class mode
-```
-
-`@omit` fields are never affected.
-
-## Performance
-
-Lazy is fastest when you **skip** fields or **pass them through**, and the win
-grows with payload size. Throughput below is SIMD, MB/s (higher is better),
-measured by [`assembly/__benches__/lazy/lazy.bench.ts`](https://github.com/JairusSW/json-as/blob/main/assembly/__benches__/lazy/lazy.bench.ts).
-
-**Deserialize** — parse into the struct without reading the deferred fields:
-
-![Deserialize: eager vs lazy by payload size](/json-as/bench/lazy-deserialize.svg)
-
-**Round-trip** (`parse → stringify`) of an untouched object — the proxy / filter
-/ forward case never parses or re-serializes the deferred fields:
-
-![Round-trip: eager vs lazy by payload size](/json-as/bench/lazy-roundtrip.svg)
-
-**Serialize** — re-emitting a parsed object forwards the untouched fields' raw
-bytes instead of rebuilding them:
-
-![Serialize: eager vs lazy by payload size](/json-as/bench/lazy-serialize.svg)
-
-**Access patterns** — skipping, reading one field, or forwarding is far faster
-than eager; reading _every_ deferred field costs a little more, since the work
-is deferred, not removed:
-
-![Access pattern: eager vs lazy](/json-as/bench/lazy-access-pattern.svg)
-
-::: tip Rule of thumb
-Lazy the fields you usually **skip or forward**. `auto` does this for you; reach
-for `all` on proxy/filter workloads over large payloads.
-:::
-
-A deferred field is parsed once on first read and cached. An untouched field
-round-trips by copying its original source bytes — never parsed or re-serialized.
-
-The trade is **code size**: `lazy: "all"` generates a getter and a serialize
-branch per field, so a fully-deferred wide schema (100+ fields) bloats the module
-and can even exceed the optimizer's budget. Prefer per-field `@lazy` (or `auto`)
-when module size matters.
+Precedence: explicit `@lazy` / `JSON.Lazy<T>` always wins, then `@eager`, then the class mode. `@omit` fields are never affected.
 
 ## Interactions
 
-- **`@omitnull`** — supported. Null-ness is decided from the stored slice
-  without materializing the value.
-- **`@omitif`** — supported. The predicate runs at serialize; if it reads the
-  lazy field, that field materializes, otherwise the field still passes through
-  raw.
-- **Generics** — a lazy field on a generic class works for **reference-type**
-  instantiations (e.g. `Box<Owner>`). Value-type instantiations (`Box<i32>`)
-  are not supported.
-
-::: warning Custom serializers
-A class with a custom `@serializer`/`@deserializer` cannot have lazy fields — the
-custom methods replace the generated (de)serializer that lazy slots rely on. The
-transform reports an error. (A field whose *type* has a custom (de)serializer is
-fine.)
-:::
+- **`@omitnull` / `@omitif`** — supported. Null-ness is decided from the stored slice without materializing the value; an `@omitif` predicate that reads the field will materialize it, otherwise it passes through raw.
+- **Generics** — a lazy field on a generic class works for **reference-type** instantiations (e.g. `Box<Owner>`); value-type instantiations (`Box<i32>`) are not supported.
+- **Custom serializers** — a class with a custom `@serializer`/`@deserializer` can't have lazy fields (the custom methods replace the generated ones the slots rely on); the transform reports an error.
 
 ## Caveats
 
-- **Object-literal initialization isn't supported.** A lazy field becomes a
-  get/set accessor, and AssemblyScript's object-literal class init
-  (`const r: Repo = { … }`) doesn't support accessors. Construct with `new` +
-  assignment (which goes through the setter), or use `JSON.parse`:
+- **Construct with `new` + assignment, or `JSON.parse`.** A lazy field becomes a get/set accessor, and AssemblyScript's object-literal class init (`const r: Repo = { … }`) doesn't support accessors:
 
-  ```ts
+  ```ts ignore
   const repo = new Repo();
   repo.name = "json-as";
-  repo.owner = owner; // setter
+  repo.owner = owner; // goes through the setter
   ```
 
-- A struct keeps its source string alive while it lives (the lifetime cost of
-  zero-copy). For long-lived objects over huge payloads, read what you need and
-  drop the object, or prefer per-field `@lazy` over `all`.
-- `lazy: "all"` increases module size (a getter + serialize branch per field).
-  When code size matters, mark only the fields you actually skip.
+- A struct **keeps its source string alive** while it lives (the cost of zero-copy). For long-lived objects over huge payloads, read what you need and drop the object, or prefer per-field `@lazy` over `all`.
+- **`lazy: "all"` grows module size** — it generates a getter and a serialize branch per field. When code size matters, mark only the fields you actually skip.
+
+## Performance
+
+Lazy is fastest when you **skip** fields or **forward** them, and the win grows with payload size. See [Performance](./performance#lazy-fields) for the eager-vs-lazy benchmarks.

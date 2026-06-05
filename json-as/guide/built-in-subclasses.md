@@ -1,41 +1,73 @@
 # Built-in Subclasses
 
-Subclassing behavior is split into two cases.
+You can subclass built-in containers like `Array`, `Map`, `Set`, `Uint8Array`, and the other typed arrays. How they serialize depends on whether you decorate the subclass.
 
-## Undecorated subclasses
+## Undecorated: keeps built-in behavior
 
-Undecorated subclasses of built-in container types keep built-in JSON behavior.
-
-Examples:
-
-- `class MyBytes extends Uint8Array {}`
-- `class MyMap extends Map<string, i32> {}`
-- `class MySet extends Set<string> {}`
-- `class MyArray extends Array<i32> {}`
-
-These still serialize and deserialize like their built-in bases.
-
-## Decorated subclasses
-
-If you decorate the subclass with `@json`, it is treated like any other generated class.
-
-That means:
-
-- generated `__SERIALIZE` / `__DESERIALIZE` methods are created
-- inherited public fields can become part of the schema
-- custom `@serializer(...)` / `@deserializer(...)` hooks can override the wire format
-
-For built-in subclasses, this means inherited fields from the base type may become visible in JSON. If that is not what you want, explicitly mark them with `@omit`.
-
-## Example
+An undecorated subclass serializes and deserializes exactly like its base type — a named `Uint8Array` is still a JSON array of bytes.
 
 ```ts
-@json
-class GeneratedBytes extends Uint8Array {
+import { JSON } from "json-as";
+
+class MyBytes extends Uint8Array {
   constructor(length: i32 = 0) {
     super(length);
   }
 }
+
+const mb = new MyBytes(3);
+mb[0] = 1;
+mb[1] = 2;
+mb[2] = 3;
+
+JSON.stringify<MyBytes>(mb); // '[1,2,3]'
+JSON.stringify(JSON.parse<MyBytes>("[4,5,6]")); // '[4,5,6]'
 ```
 
-This is different from an undecorated `Uint8Array` subclass. It participates in transform-generated class serialization.
+This is the right choice when you just want a named or extended container that still reads/writes as the underlying type.
+
+## Decorated: treated as a generated struct
+
+Adding `@json` tells the transform to treat the subclass like any other generated class — it emits `__SERIALIZE` / `__DESERIALIZE` over the class's **fields**. For a built-in container that means its *internal* fields become the schema:
+
+```ts ignore
+@json
+class GenBytes extends Uint8Array {
+  constructor(length: i32 = 0) {
+    super(length);
+  }
+}
+
+// Serializes the inherited internals, not the bytes:
+// {"buffer":[…],"dataStart":<pointer>,"byteLength":3}
+JSON.stringify<GenBytes>(new GenBytes(3));
+```
+
+That's almost never what you want on its own. So a decorated built-in subclass is really only useful **together with a custom format**:
+
+```ts ignore
+@json
+class HexBytes extends Uint8Array {
+  constructor(length: i32 = 0) {
+    super(length);
+  }
+
+  @serializer("string")
+  serializer(self: HexBytes): string {
+    /* encode bytes as a hex string */
+  }
+
+  @deserializer("string")
+  deserializer(data: string): HexBytes {
+    /* decode hex string back to bytes */
+  }
+}
+```
+
+See [Custom Serialization](./custom-serialization) for the full pattern.
+
+## Rule of thumb
+
+- Want the built-in's JSON form? **Don't decorate** the subclass.
+- Want a different wire format? **Decorate it and add `@serializer`/`@deserializer`.**
+- Decorating without a custom format exposes the base type's internal fields — mark any you don't want with `@omit`, or (better) supply a custom format.

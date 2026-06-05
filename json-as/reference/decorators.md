@@ -1,57 +1,87 @@
 # Decorators
 
-## `@json`
+Every decorator `json-as` understands, in one place. They're ambient — available once the transform is enabled, no import needed (only `JSON` itself is imported).
 
-Marks a class for transform-generated serialization and deserialization.
+Here's most of them on one class:
 
-## `@alias("name")`
+```ts
+import { JSON } from "json-as";
 
-Maps a field to a different JSON key.
+@json
+class Account {
+  @alias("user_id") id: i32 = 0;
+  name: string = "";
+  @omit password: string = "";
+  @omitnull() nickname: string | null = null;
+  @omitif((self: Account) => self.balance == 0) balance: i32 = 0;
+}
+```
 
-## `@omit`
+## Class decorators
 
-Always omits a field from serialization.
+### `@json`
 
-## `@omitnull()`
+Marks a class for transform-generated serialization/deserialization. Required on every type passed to `JSON.parse` / `JSON.stringify`, including nested types.
 
-Omits a field when its value is `null`.
+```ts ignore
+@json
+class Vec3 { x: f64 = 0; y: f64 = 0; z: f64 = 0; }
+```
 
-## `@omitif(predicate)`
+`@serializable` is an exact alias of `@json`.
 
-Omits a field when the predicate returns `true`.
+### `@json({ lazy })`
 
-## `@lazy`
+Sets a class-wide [lazy](../guide/lazy-fields) default:
 
-Defers a field: its raw JSON slice is stored at parse time and parsed into the
-value only on first access. Equivalent to the `JSON.Lazy<T>` type wrapper. See
-[Lazy Fields](/json-as/guide/lazy-fields).
+- `"none"` *(default)* — every field eager.
+- `"auto"` — defer the expensive-to-parse fields (strings, arrays, maps, nested structs), keep cheap ones (primitives, enums, `Date`) eager.
+- `"all"` — defer every field.
 
-## `@eager`
+```ts ignore
+@json({ lazy: "auto" })
+class Repo { /* … */ }
+```
 
-Opts a field out of a class-level `@json({ lazy })` default, keeping it eager.
+## Field decorators
 
-## `@json({ lazy })`
+### `@alias("name")`
 
-Sets a class-wide lazy default: `"none"` (default), `"auto"` (defer
-expensive-to-parse fields, keep scalars eager), or `"all"` (defer every field).
-See [Lazy Fields](/json-as/guide/lazy-fields).
+Use a different JSON key than the field name.
 
-## `@serializer(kind?)`
+### `@omit`
 
-Declares a custom serializer method for the class.
+Never serialize the field (still accepted on parse).
 
-The optional `kind` is one of:
+### `@omitnull()`
 
-- `any`
-- `string`
-- `number`
-- `boolean`
-- `object`
-- `array`
-- nullable forms like `string | null`
+Skip the field on serialize when its value is `null`.
 
-## `@deserializer(kind?)`
+### `@omitif(condition)`
 
-Declares a custom deserializer method for the class.
+Skip the field on serialize when `condition` is truthy. The condition is either a predicate that receives the **instance** — `(self: T) => boolean` — or a string expression evaluated in the instance's scope (refer to fields via `this`):
 
-Its kind should match the serializer kind when both are present.
+```ts ignore
+@omitif((self: Player) => self.age < 18) email: string = "";
+@omitif("this.age < 18") phone: string = "";
+```
+
+### `@lazy`
+
+Defer this field: its raw JSON slice is stored at parse time and parsed only on first access. Equivalent to the `JSON.Lazy<T>` type wrapper. See [Lazy Fields](../guide/lazy-fields).
+
+### `@eager`
+
+Opt a single field out of a class-level `@json({ lazy })` default, forcing it eager.
+
+## Method decorators
+
+### `@serializer(shape?)`
+
+Marks a method as the class's custom serializer (replaces the generated one). It receives the instance and must return a valid JSON string. See [Custom Serialization](../guide/custom-serialization).
+
+### `@deserializer(shape?)`
+
+Marks a method as the class's custom deserializer. It receives the raw JSON string and must return a fresh instance. Pair it with `@serializer`.
+
+For both, `shape` is an optional hint for the JSON form the type maps to: `"any"` *(default)*, `"string"`, `"number"`, `"boolean"`, `"object"`, `"array"`, `"null"`, or a nullable form like `"string | null"`. Keep the serializer and deserializer shapes matched.

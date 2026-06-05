@@ -86,7 +86,7 @@ export default defineConfig({
             { text: "Performance", link: "/json-as/guide/performance" },
             { text: "Decorators", link: "/json-as/reference/decorators" },
             { text: "Dynamic Types", link: "/json-as/reference/dynamic-types" },
-            { text: "Customization", link: "/json-as/reference/customization" },
+            { text: "Configuration", link: "/json-as/reference/customization" },
             {
               text: "Runtime Behavior",
               link: "/json-as/reference/runtime-behavior",

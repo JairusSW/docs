@@ -78,19 +78,27 @@ otherwise                       ->  the class mode
 
 ## Performance
 
-Lazy is fastest when you **skip** fields or **pass them through** — and the win
-grows with payload size. Deserialize, parsing into the struct but not reading
-the deferred fields (SIMD, ns/op):
+Lazy is fastest when you **skip** fields or **pass them through**, and the win
+grows with payload size. Throughput below is SIMD, MB/s (higher is better),
+measured by [`assembly/__benches__/lazy/lazy.bench.ts`](https://github.com/JairusSW/json-as/blob/main/assembly/__benches__/lazy/lazy.bench.ts).
+
+**Deserialize** — parse into the struct without reading the deferred fields:
 
 ![Deserialize: eager vs lazy by payload size](/json-as/bench/lazy-deserialize.svg)
 
-Round-trip (`parse → stringify`) of an untouched object — the proxy / filter /
-forward case — never parses or re-serializes the deferred fields:
+**Round-trip** (`parse → stringify`) of an untouched object — the proxy / filter
+/ forward case never parses or re-serializes the deferred fields:
 
 ![Round-trip: eager vs lazy by payload size](/json-as/bench/lazy-roundtrip.svg)
 
-Across access patterns, lazy stays at or below eager — even when you read every
-deferred field (the slice-pointer materialization is as cheap as eager parsing):
+**Serialize** — re-emitting a parsed object forwards the untouched fields' raw
+bytes instead of rebuilding them:
+
+![Serialize: eager vs lazy by payload size](/json-as/bench/lazy-serialize.svg)
+
+**Access patterns** — skipping, reading one field, or forwarding is far faster
+than eager; reading _every_ deferred field costs a little more, since the work
+is deferred, not removed:
 
 ![Access pattern: eager vs lazy](/json-as/bench/lazy-access-pattern.svg)
 
@@ -102,11 +110,10 @@ for `all` on proxy/filter workloads over large payloads.
 A deferred field is parsed once on first read and cached. An untouched field
 round-trips by copying its original source bytes — never parsed or re-serialized.
 
-The trade is **code size**: `lazy: "all"` generates a getter + serialize branch
-per field, so a fully-deferred large schema balloons. Prefer per-field `@lazy`
-(or `auto`) when module size matters.
-
-![Code-size cost of lazy-everywhere](/json-as/bench/lazy-module-size.svg)
+The trade is **code size**: `lazy: "all"` generates a getter and a serialize
+branch per field, so a fully-deferred wide schema (100+ fields) bloats the module
+and can even exceed the optimizer's budget. Prefer per-field `@lazy` (or `auto`)
+when module size matters.
 
 ## Interactions
 

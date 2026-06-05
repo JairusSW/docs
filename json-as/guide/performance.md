@@ -32,7 +32,9 @@ Deferring fields with [`@lazy` / `JSON.Lazy<T>` / `@json({ lazy })`](/json-as/gu
 
 ![Round-trip: eager vs lazy by payload size](/json-as/bench/lazy-roundtrip.svg)
 
-Lazy stays at or below eager across access patterns (read none / one / all / pass through), so the only real trade is module size under `lazy: "all"`. See the [Lazy Fields guide](/json-as/guide/lazy-fields) for the full picture.
+![Serialize: eager vs lazy by payload size](/json-as/bench/lazy-serialize.svg)
+
+Skipping or forwarding fields is far faster than eager; reading every deferred field costs a little more (the work is deferred, not removed), and `lazy: "all"` trades module size for it. See the [Lazy Fields guide](/json-as/guide/lazy-fields) for the access-pattern breakdown and the full picture.
 
 ## Benchmark commands
 

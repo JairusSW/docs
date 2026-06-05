@@ -82,17 +82,17 @@ Lazy is fastest when you **skip** fields or **pass them through** — and the wi
 grows with payload size. Deserialize, parsing into the struct but not reading
 the deferred fields (SIMD, ns/op):
 
-![Deserialize: eager vs lazy by payload size](/json-as/bench/lazy-deserialize.png)
+![Deserialize: eager vs lazy by payload size](/json-as/bench/lazy-deserialize.svg)
 
 Round-trip (`parse → stringify`) of an untouched object — the proxy / filter /
 forward case — never parses or re-serializes the deferred fields:
 
-![Round-trip: eager vs lazy by payload size](/json-as/bench/lazy-roundtrip.png)
+![Round-trip: eager vs lazy by payload size](/json-as/bench/lazy-roundtrip.svg)
 
 Across access patterns, lazy stays at or below eager — even when you read every
 deferred field (the slice-pointer materialization is as cheap as eager parsing):
 
-![Access pattern: eager vs lazy](/json-as/bench/lazy-access-pattern.png)
+![Access pattern: eager vs lazy](/json-as/bench/lazy-access-pattern.svg)
 
 ::: tip Rule of thumb
 Lazy the fields you usually **skip or forward**. `auto` does this for you; reach
@@ -106,7 +106,7 @@ The trade is **code size**: `lazy: "all"` generates a getter + serialize branch
 per field, so a fully-deferred large schema balloons. Prefer per-field `@lazy`
 (or `auto`) when module size matters.
 
-![Code-size cost of lazy-everywhere](/json-as/bench/lazy-module-size.png)
+![Code-size cost of lazy-everywhere](/json-as/bench/lazy-module-size.svg)
 
 ## Interactions
 

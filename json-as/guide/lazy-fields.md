@@ -78,23 +78,35 @@ otherwise                       ->  the class mode
 
 ## Performance
 
-Lazy pays off when you **skip** fields or **pass them through**, and costs a
-little when you read everything you deferred (SIMD, vs eager):
+Lazy is fastest when you **skip** fields or **pass them through** — and the win
+grows with payload size. Deserialize, parsing into the struct but not reading
+the deferred fields (SIMD, ns/op):
 
-| Access pattern                            | Result            |
-| ----------------------------------------- | ----------------- |
-| parse, read none of the deferred fields   | ~3–13× faster     |
-| parse → stringify, untouched (passthrough) | ~2–9× faster     |
-| parse, read **every** deferred field      | ~1.3× **slower**  |
+![Deserialize: eager vs lazy by payload size](/json-as/bench/lazy-deserialize.png)
+
+Round-trip (`parse → stringify`) of an untouched object — the proxy / filter /
+forward case — never parses or re-serializes the deferred fields:
+
+![Round-trip: eager vs lazy by payload size](/json-as/bench/lazy-roundtrip.png)
+
+Across access patterns, lazy stays at or below eager — even when you read every
+deferred field (the slice-pointer materialization is as cheap as eager parsing):
+
+![Access pattern: eager vs lazy](/json-as/bench/lazy-access-pattern.png)
 
 ::: tip Rule of thumb
-Lazy the fields you usually **skip or forward**, not the ones you always read.
-`auto` does this for you; reach for `all` on proxy/filter workloads over large
-payloads.
+Lazy the fields you usually **skip or forward**. `auto` does this for you; reach
+for `all` on proxy/filter workloads over large payloads.
 :::
 
 A deferred field is parsed once on first read and cached. An untouched field
 round-trips by copying its original source bytes — never parsed or re-serialized.
+
+The trade is **code size**: `lazy: "all"` generates a getter + serialize branch
+per field, so a fully-deferred large schema balloons. Prefer per-field `@lazy`
+(or `auto`) when module size matters.
+
+![Code-size cost of lazy-everywhere](/json-as/bench/lazy-module-size.png)
 
 ## Interactions
 

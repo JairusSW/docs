@@ -113,6 +113,10 @@ export default defineConfig({
               text: "Generated Code & the Fast Path",
               link: "/json-as/deep-dive/codegen",
             },
+            {
+              text: "SWAR & SIMD Scanning",
+              link: "/json-as/deep-dive/scanning",
+            },
             { text: "The Lazy Slot", link: "/json-as/deep-dive/lazy-slot" },
             {
               text: "The Serialization Buffer",

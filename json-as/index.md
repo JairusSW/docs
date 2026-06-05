@@ -51,6 +51,7 @@ JSON.stringify(v); // '{"x":1.5,"y":2.5,"z":3.5}'
 How the interesting parts actually work:
 
 - [Generated Code & the Fast Path](./deep-dive/codegen) — what `@json` compiles to
+- [SWAR & SIMD Scanning](./deep-dive/scanning) — finding structure many lanes at a time
 - [The Lazy Slot](./deep-dive/lazy-slot) — the packed `u64` behind lazy fields
 - [The Serialization Buffer](./deep-dive/buffer) — zero-copy, zero-alloc round-trips
 

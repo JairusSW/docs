@@ -68,10 +68,16 @@ export default defineConfig({
       ],
       "/json-as/": [
         {
-          text: "json-as",
+          text: "Introduction",
           items: [
             { text: "Overview", link: "/json-as/" },
             { text: "Getting Started", link: "/json-as/guide/getting-started" },
+          ],
+        },
+        {
+          text: "Guide",
+          collapsed: false,
+          items: [
             { text: "Basic Usage", link: "/json-as/guide/basic-usage" },
             { text: "Built-in Types", link: "/json-as/guide/built-in-types" },
             {
@@ -84,6 +90,12 @@ export default defineConfig({
             },
             { text: "Lazy Fields", link: "/json-as/guide/lazy-fields" },
             { text: "Performance", link: "/json-as/guide/performance" },
+          ],
+        },
+        {
+          text: "Reference",
+          collapsed: false,
+          items: [
             { text: "Decorators", link: "/json-as/reference/decorators" },
             { text: "Dynamic Types", link: "/json-as/reference/dynamic-types" },
             { text: "Configuration", link: "/json-as/reference/customization" },

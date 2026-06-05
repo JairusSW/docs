@@ -2,6 +2,31 @@
 
 `json-as` is built for multi-GB/s throughput. The generated code is monomorphized per type (no runtime schema walk), scanning is vectorized, and the hot paths avoid allocation. This page covers the knobs that matter.
 
+## Throughput vs JavaScript
+
+These compare `json-as` in each scanning mode (NAIVE / SWAR / SIMD) against V8's built-in `JSON`, across payload sizes on the same machine. Higher is better.
+
+**Serialize:**
+
+![Serialization throughput: json-as vs native JSON](/json-as/bench/serialize-throughput.svg)
+
+**Deserialize:**
+
+![Deserialization throughput: json-as vs native JSON](/json-as/bench/deserialize-throughput.svg)
+
+<details>
+<summary>Primitive (de)serialization (click to expand)</summary>
+
+Single-value throughput for the primitive types:
+
+![Primitive serialization](/json-as/bench/primitive-serialize.svg)
+
+![Primitive deserialization](/json-as/bench/primitive-deserialize.svg)
+
+</details>
+
+A multi-library comparison (json-as vs native `JSON`, `fast-json`, and `assemblyscript-json`) lives in the [repository README](https://github.com/JairusSW/json-as#performance).
+
 ## Scanning modes
 
 Pick a backend at build time with `JSON_MODE` (see [Configuration](../reference/customization#json-mode)). All three are bit-for-bit equivalent — they trade speed for code size:

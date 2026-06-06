@@ -2,17 +2,38 @@
 
 `json-as` is built for multi-GB/s throughput. The generated code is monomorphized per type (no runtime schema walk), scanning is vectorized, and the hot paths avoid allocation. This page covers the knobs that matter.
 
-## Throughput vs JavaScript
+## Per-payload performance
 
-These compare `json-as` in each scanning mode (NAIVE / SWAR / SIMD) against V8's built-in `JSON`, across payload sizes on the same machine. Higher is better.
+Throughput across the standard payload suite (NAIVE / SWAR / SIMD vs built-in JS `JSON`). Higher is better.
 
 **Serialize:**
 
-![Serialization throughput: json-as vs native JSON](/json-as/bench/serialize-throughput.svg)
+![Serialization Performance](/json-as/bench/serialize.svg)
 
 **Deserialize:**
 
-![Deserialization throughput: json-as vs native JSON](/json-as/bench/deserialize-throughput.svg)
+![Deserialization Performance](/json-as/bench/deserialize.svg)
+
+## String throughput vs payload size
+
+How throughput scales as string payloads grow from 1 KB to 1 MB. Higher is better.
+
+**Serialize:**
+
+![String serialization throughput vs payload size](/json-as/bench/serialize-throughput.png)
+
+**Deserialize:**
+
+![String deserialization throughput vs payload size](/json-as/bench/deserialize-throughput.png)
+
+<details>
+<summary>Object throughput (click to expand)</summary>
+
+![Object serialization throughput vs payload size](/json-as/bench/obj-serialize-throughput.png)
+
+![Object deserialization throughput vs payload size](/json-as/bench/obj-deserialize-throughput.png)
+
+</details>
 
 <details>
 <summary>Primitive (de)serialization (click to expand)</summary>

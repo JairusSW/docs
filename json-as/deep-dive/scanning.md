@@ -57,6 +57,18 @@ if (mask == 0) {
 
 Those overshooting stores are why the string paths reserve a little extra room (`ensureSize(len + 16)`): a `v128` write near the end of the output may spill up to 15 bytes past the logical cursor, and the slack absorbs it. Serialization uses the same streaming-store idea in reverse, writing the value out in `v128`-sized chunks.
 
+## Serializing strings
+
+Going the other way — a `string` back into a quoted JSON value — is the mirror image: scan for the code units that *must* be escaped (`"`, `\`, control chars below `0x20`, and lone surrogates), bulk-copy the clean runs between them, and emit each escape from a table. The same SWAR/SIMD masks drive that scan.
+
+For a string with **no** escapes — the common case — the whole per-character scan is wasted: the output is just the input wrapped in quotes. The dynamic path (`JSON.Value` / `JSON.Obj`) avoids it by caching a small **escape class** on the value itself. A materialized string box uses only the low 32 bits of its 45-bit NaN-box payload for the pointer, so two spare bits record the verdict:
+
+- **unclassified** → on first serialize, scan once and store the result,
+- **clean** → emit `"` + one `memory.copy` + `"`, no scan,
+- **needs-escape** → the full scan-and-escape path above.
+
+AssemblyScript strings are immutable, so the class never goes stale — every re-serialize after the first reuses it, and a clean dynamic string round-trips at `memory.copy` speed. (A still-deferred lazy value goes further: it never materializes at all, streaming its original source bytes straight through. Typed struct `string` fields have nowhere to cache a class, so they always take the scan path.)
+
 ## Same result, three speeds
 
 NAIVE, SWAR, and SIMD are bit-for-bit equivalent — they only differ in how many lanes they chew per step (1 / 4 / 8) and therefore in throughput and code size. That's the whole reason the mode is a build-time switch rather than three separate libraries.

@@ -66,6 +66,14 @@ Skip the field on serialize when `condition` is truthy. The condition is either 
 @omitif("this.age < 18") phone: string = "";
 ```
 
+### `@optional`
+
+Mark a field optional for **deserialization**: the key may be absent from the input (or appear in any order), and the field keeps its default. Unlike `@omitnull()`/`@omitif()` it does **not** omit the field on serialize and has no nullability requirement — it only opts the field into the order-tolerant fast path on parse.
+
+```ts ignore
+@optional retweeted_status: Retweet | null = null; // key may be absent on parse
+```
+
 ### `@lazy`
 
 Defer this field: its raw JSON slice is stored at parse time and parsed only on first access. Equivalent to the `JSON.Lazy<T>` type wrapper. See [Lazy Fields](../guide/lazy-fields).

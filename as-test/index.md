@@ -15,7 +15,6 @@ It ships as a CLI (`ast` / `as-test`) and an npm dev dependency. There are no re
 - **Fuzzing** — property tests with deterministic, reproducible seeds in `assembly/__fuzz__/*.fuzz.ts`.
 - **Coverage** — branch-aware instrumentation with project/dependency filtering.
 - **Runtimes & modes** — one suite, many targets, selected with `--mode`.
-- **Reporters** — a human-readable default and TAP, plus custom reporter modules.
 
 ## Start here
 

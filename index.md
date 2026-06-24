@@ -25,6 +25,14 @@ features:
     details: Runtime-aware AssemblyScript testing with snapshots, fuzzing, mocking, coverage, and multi-runtime workflows.
     link: /as-test/
     linkText: Read the docs
+  - title: as-bench
+    details: Runtime-agnostic, statistically-aware benchmarking for AssemblyScript — Criterion-style CIs, baselines, per-function profiling, and multi-runtime comparisons.
+    link: /as-bench/
+    linkText: Read the docs
+  - title: str-as
+    details: Virtual, zero-copy strings for AssemblyScript — slice, search, and trim without allocating, with SWAR/SIMD scans and the full String surface.
+    link: /str-as/
+    linkText: Read the docs
   - title: try-as
     details: Exception-style control flow for AssemblyScript with transform-backed try/catch ergonomics and explicit runtime tradeoffs.
     link: /try-as/

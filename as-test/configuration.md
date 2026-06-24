@@ -101,7 +101,6 @@ They merge together — top-level first, then build/run-specific, then mode over
       "cmd": "node ./.as-test/runners/default.wasi.js",
       "browser": ""
     },
-    "reporter": "default",
     "env": {}
   }
 }
@@ -111,10 +110,9 @@ They merge together — top-level first, then build/run-specific, then mode over
 | --- | --- | --- |
 | `runtime.cmd` | `string` | Runtime command. Supports `<file>` and `<name>`. |
 | `runtime.browser` | `string` | Browser for web targets: `chrome`, `chromium`, `firefox`, `webkit`, or a path. |
-| `reporter` | `string \| object` | [Reporter](./reporters) selection. |
 | `env` | env | Run-only environment overrides. |
 
-The generated runners are env-driven single-file scripts, so standard runner commands don't need a `<file>` argument. Reporter accepts `""`, `"default"`, `"tap"`, a custom module path, or an object — see [Reporters](./reporters).
+The generated runners are env-driven single-file scripts, so standard runner commands don't need a `<file>` argument.
 
 ## Coverage
 

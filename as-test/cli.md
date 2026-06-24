@@ -51,6 +51,8 @@ Available on most run-like commands (`test`, `run`, `fuzz`, `build`, `doctor`, `
 | `--list` | build/run/test/fuzz | Preview resolved files/artifacts without executing. |
 | `--list-modes` | build/run/test/fuzz | Preview configured and selected mode names. |
 
+Short aliases are expanded before parsing: `-m` → `--mode`, `-p` → `--parallel`, `-c` → `--config`, `-e` → `--enable` (plus the built-in `-w` → `--watch`, `-v` → `--version`, `-h` → `--help`).
+
 ## `ast test` and `ast run`
 
 `test` accepts everything `run` does, plus the build and fuzz options below.
@@ -64,8 +66,8 @@ Available on most run-like commands (`test`, `run`, `fuzz`, `build`, `doctor`, `
 | `--no-snapshot` | Skip snapshot assertions for this run. |
 | `--show-coverage[=all]` | Print uncovered [coverage](./coverage) points; `=all` expands nested gaps. |
 | `--suite <names>` | Filter to matching suite names or slug paths (alias `--suites`). |
-| `--reporter <name\|path>` | Use `default`, `tap`, or a custom [reporter](./reporters) module. |
-| `--tap` | Shortcut for `--reporter tap`. |
+| `--changed` | Run only specs whose source — or recorded build dependencies — changed in git. |
+| `--cache` / `--no-cache` | Toggle the incremental build/run cache for this run. |
 | `--verbose` | Keep expanded per-suite/test lines and live updates. |
 | `--clean` | Disable in-place TTY updates; print final lines only. |
 

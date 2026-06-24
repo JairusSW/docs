@@ -18,6 +18,8 @@ export default defineConfig({
         items: [
           { text: "json-as", link: "/json-as/" },
           { text: "as-test", link: "/as-test/" },
+          { text: "as-bench", link: "/as-bench/" },
+          { text: "str-as", link: "/str-as/" },
           { text: "try-as", link: "/try-as/" },
           { text: "as-labs", link: "/as-labs/" },
           { text: "wipc", link: "/wipc/" },
@@ -28,6 +30,8 @@ export default defineConfig({
         items: [
           { text: "json-as", link: "https://github.com/JairusSW/json-as" },
           { text: "as-test", link: "https://github.com/JairusSW/as-test" },
+          { text: "as-bench", link: "https://github.com/JairusSW/as-bench" },
+          { text: "str-as", link: "https://github.com/JairusSW/str-as" },
           { text: "as-labs", link: "https://github.com/JairusSW/as-labs" },
           { text: "try-as", link: "https://github.com/JairusSW/try-as" },
           { text: "wipc", link: "https://github.com/JairusSW/wipc" },
@@ -205,7 +209,6 @@ export default defineConfig({
             { text: "Configuration", link: "/as-test/configuration" },
             { text: "Caching", link: "/as-test/caching" },
             { text: "Coverage", link: "/as-test/coverage" },
-            { text: "Reporters", link: "/as-test/reporters" },
             { text: "Doctor", link: "/as-test/doctor" },
           ],
         },
@@ -227,6 +230,82 @@ export default defineConfig({
               text: "Multi-Mode Config",
               link: "/as-test/examples/multi-mode-config",
             },
+          ],
+        },
+      ],
+      "/as-bench/": [
+        {
+          text: "Introduction",
+          items: [
+            { text: "Overview", link: "/as-bench/" },
+            { text: "Getting Started", link: "/as-bench/getting-started" },
+            { text: "Writing Benchmarks", link: "/as-bench/writing-benchmarks" },
+          ],
+        },
+        {
+          text: "Core",
+          collapsed: false,
+          items: [
+            { text: "Statistics & Output", link: "/as-bench/statistics" },
+            { text: "Baselines", link: "/as-bench/baselines" },
+          ],
+        },
+        {
+          text: "Profiling",
+          collapsed: false,
+          items: [
+            { text: "Overview", link: "/as-bench/profiling/" },
+            { text: "Instruction Counts", link: "/as-bench/profiling/instructions" },
+            { text: "Self Time", link: "/as-bench/profiling/time" },
+            { text: "Allocations", link: "/as-bench/profiling/allocations" },
+          ],
+        },
+        {
+          text: "Runtimes & Modes",
+          collapsed: false,
+          items: [
+            { text: "Runtimes & WIPC", link: "/as-bench/runtimes/" },
+            { text: "Multiple Runtimes", link: "/as-bench/runtimes/multiple-runtimes" },
+            { text: "Deterministic Mode", link: "/as-bench/runtimes/deterministic" },
+          ],
+        },
+        {
+          text: "Reference",
+          collapsed: false,
+          items: [
+            { text: "CLI", link: "/as-bench/cli" },
+            { text: "Configuration", link: "/as-bench/configuration" },
+            { text: "Doctor", link: "/as-bench/doctor" },
+          ],
+        },
+      ],
+      "/str-as/": [
+        {
+          text: "Introduction",
+          items: [
+            { text: "Overview", link: "/str-as/" },
+            { text: "Getting Started", link: "/str-as/getting-started" },
+            { text: "The View Model", link: "/str-as/views" },
+          ],
+        },
+        {
+          text: "API",
+          collapsed: false,
+          items: [
+            { text: "Overview", link: "/str-as/api/" },
+            { text: "Slicing & Trimming", link: "/str-as/api/slicing" },
+            { text: "Searching", link: "/str-as/api/searching" },
+            { text: "Transforming", link: "/str-as/api/transforming" },
+            { text: "Comparison & Operators", link: "/str-as/api/comparison" },
+            { text: "Encoding & Statics", link: "/str-as/api/encoding" },
+          ],
+        },
+        {
+          text: "Reference",
+          collapsed: false,
+          items: [
+            { text: "Performance", link: "/str-as/performance" },
+            { text: "Internals", link: "/str-as/internals" },
           ],
         },
       ],

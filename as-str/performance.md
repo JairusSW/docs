@@ -14,7 +14,7 @@ are built directly from the view in a single pass.
 Every native `String` operation vs its `str` counterpart — native (red) is
 the `1×` baseline, `str` (blue) its speedup:
 
-![Every String operation vs its str counterpart](https://raw.githubusercontent.com/JairusSW/str-as/main/charts/per-op-speedup.svg)
+![Every String operation vs its str counterpart](https://raw.githubusercontent.com/JairusSW/str-as/refs/heads/docs/charts/v0.1.0/per-op-speedup.svg)
 
 | Operation              | vs native `String`           |
 | ---------------------- | ---------------------------- |
@@ -37,7 +37,7 @@ trusted reference instead.
 
 Native vs `str` SWAR vs `str` SIMD, in millions of ops/sec:
 
-![String operation throughput: native vs SWAR vs SIMD](https://raw.githubusercontent.com/JairusSW/str-as/main/charts/throughput.svg)
+![String operation throughput: native vs SWAR vs SIMD](https://raw.githubusercontent.com/JairusSW/str-as/refs/heads/docs/charts/v0.1.0/throughput.svg)
 
 ## SWAR and SIMD
 

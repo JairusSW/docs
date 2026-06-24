@@ -5,14 +5,14 @@
 Add `str` to an AssemblyScript project:
 
 ```bash
-npm install str-as
+npm install as-str
 ```
 
 There is **no transform** — `str` is a plain library. Import the `str`
 class:
 
 ```ts
-import { str } from "str-as";
+import { str } from "as-str";
 ```
 
 The encoding namespaces (`str.UTF8` / `str.UTF16`) are powered by
@@ -76,11 +76,11 @@ import at compile time.
 1. Add the transform to your `asc` command or `asconfig.json`:
 
    ```bash
-   --transform str-as/transform
+   --transform as-str/transform
    ```
 
    ```json
-   { "options": { "transform": ["str-as/transform"] } }
+   { "options": { "transform": ["as-str/transform"] } }
    ```
 
 2. Add the ambient typings so your editor resolves the globals — extend
@@ -90,7 +90,7 @@ import at compile time.
    {
      "extends": [
        "assemblyscript/std/assembly.json",
-       "str-as/globals.json"
+       "as-str/globals.json"
      ],
      "include": ["./**/*.ts"]
    }
@@ -99,7 +99,7 @@ import at compile time.
    The preset re-points `typeRoots` (AssemblyScript's std config sets
    `typeRoots: ["types"]`, which would otherwise block resolving the globals from
    `node_modules`). For pnpm or other non-hoisted layouts, drop a copy of
-   `node_modules/str-as/globals/index.d.ts` into your assembly directory instead
+   `node_modules/as-str/globals/index.d.ts` into your assembly directory instead
    — any `.d.ts` in the project is picked up by the editor.
 
 Now this compiles with no import:
@@ -115,7 +115,7 @@ import, and never rewrites the library's own sources — so explicit imports kee
 working and the two styles mix freely.
 
 > How it works: the transform runs in `afterParse`, prepends an
-> `import { … } from "str-as/assembly/index"` to each user source that needs it
+> `import { … } from "as-str/assembly/index"` to each user source that needs it
 > (computing the specifier the same way json-as does), and force-parses the
 > `str` module so the import resolves even when nothing else imports it. The
 > `globals/index.d.ts` typings are editor-only — asc never loads them, so they

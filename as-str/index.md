@@ -13,7 +13,7 @@ reads like `string` but allocates only at the boundary where you actually need
 an owned string.
 
 ```ts
-import { str } from "str-as";
+import { str } from "as-str";
 
 const real: string = "GET /index.html 200 1043";
 const method = str.slice(real, 0, 3); // "GET" — a view, no allocation

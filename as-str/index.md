@@ -33,14 +33,17 @@ method.toString(); // "GET" — materialized on demand
   `String.UTF8` / `String.UTF16`, running off the view's pointer range.
 - **GC-safe** — a view keeps its backing string reachable; chains of views
   anchor to the original, never to intermediates.
+- **[`str8`](./str8)** — a byte-indexed UTF-8 sibling (Rust/Go model) for data
+  that is already UTF-8, plus callable `str(x)` / `str8(x)` converters.
 
 ## Start here
 
 1. [Getting Started](./getting-started) — install and create your first view.
 2. [The View Model](./views) — how a `str` works and when bytes are copied.
-3. [API](./api/) — slicing, searching, transforming, comparison, encoding.
-4. [Performance](./performance) — SWAR/SIMD, and the numbers.
-5. [Internals](./internals) — the design, for contributors.
+3. [str8 (UTF-8)](./str8) — the byte-indexed UTF-8 view, and the converters.
+4. [API](./api/) — slicing, searching, transforming, comparison, encoding.
+5. [Performance](./performance) — SWAR/SIMD, and the numbers.
+6. [Internals](./internals) — the design, for contributors.
 
 ## When to reach for it
 

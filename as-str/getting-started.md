@@ -55,6 +55,20 @@ str.slice("hello, world", 7).toString(); // "world"
 str.indexOf("hello, world", "world"); // 7
 ```
 
+`str` is also callable as a **converter** — turn any value into a view:
+
+```ts
+str(42).toString(); // "42"
+str(someValue); // anything with a .toString()
+```
+
+## Working with UTF-8
+
+If your text is already UTF-8 bytes (files, network, JSON), reach for
+[`str8`](./str8) — the byte-indexed UTF-8 sibling of `str` — and slice/search it
+without transcoding to UTF-16. Bridge between the two with `.toStr()` /
+`.toStr8()`.
+
 ## Enable SIMD (optional)
 
 The scanning hot paths (`indexOf`, `includes`, `compare`) ship a SWAR kernel by

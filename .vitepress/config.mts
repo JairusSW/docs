@@ -286,6 +286,7 @@ export default defineConfig({
             { text: "Overview", link: "/as-str/" },
             { text: "Getting Started", link: "/as-str/getting-started" },
             { text: "The View Model", link: "/as-str/views" },
+            { text: "str8 (UTF-8)", link: "/as-str/str8" },
           ],
         },
         {

@@ -8,8 +8,7 @@ Add `str` to an AssemblyScript project:
 npm install as-str
 ```
 
-There is **no transform** — `str` is a plain library. Import the `str`
-class:
+For manual use, import the `str` class directly:
 
 ```ts
 import { str } from "as-str";
@@ -19,7 +18,9 @@ The encoding namespaces (`str.UTF8` / `str.UTF16`) are powered by
 [`utf-as`](https://github.com/JairusSW/utf-as), pulled in automatically as a
 dependency.
 
-## Create your first view
+## Manual mode
+
+### Create your first view
 
 Wrap a real `string` with `str.from`, then slice, search, and trim without
 allocating. Materialize back to a `string` with `.toString()` only when you need
@@ -41,7 +42,7 @@ word.toString(); // "quick" — the only allocation here
 const v: str = str.from("hello");
 ```
 
-## Two ways to call everything
+### Call operations
 
 Every operation is available as an **instance method** on a view and as a
 **free function** that takes a `string` *or* a `str`:
@@ -62,39 +63,66 @@ str(42).toString(); // "42"
 str(someValue); // anything with a .toString()
 ```
 
-## Working with UTF-8
+## Automatic mode
 
-If your text is already UTF-8 bytes (files, network, JSON), reach for
-[`str8`](./str8) — the byte-indexed UTF-8 sibling of `str` — and slice/search it
-without transcoding to UTF-16. Bridge between the two with `.toStr()` /
-`.toStr8()`.
-
-## Enable SIMD (optional)
-
-The scanning hot paths (`indexOf`, `includes`, `compare`) ship a SWAR kernel by
-default and a SIMD kernel when you compile with:
+Use `as-str/auto` to let the transform migrate safe internal `string` values
+to zero-copy `str` views automatically:
 
 ```bash
---enable simd
+--transform as-str/auto
 ```
 
-With SIMD off, the v128 code is dead-code-eliminated — you only pay for the tier
-you build. Nothing else changes; results are identical.
+Or add it to `asconfig.json`:
 
-## Global mode (optional)
+```json
+{ "options": { "transform": ["as-str/auto"] } }
+```
+
+Your source can continue to use native `string` types:
+
+```ts
+function compactLabel(value: string): string {
+  return value.trim().slice(0, 12);
+}
+
+export function formatLabel(value: string): string {
+  return compactLabel(value);
+}
+```
+
+After optimization, the relevant source shape is:
+
+```ts
+import { str } from "as-str";
+
+function compactLabel(value: str): str {
+  return value.trim().slice(0, 12);
+}
+
+export function formatLabel(value: string): string {
+  return compactLabel(str.from(value)).toString();
+}
+```
+
+The exported function keeps its native `string` signature while the internal
+helper operates entirely on views. The transform leaves values native around
+unsafe pointer casts, raw loads, explicit assertions, native-string call
+parameters, and other boundaries it cannot prove safe.
+
+## Global mode
 
 By default you import `str` where you use it. If you'd rather use `str`
-**without an import in every file**, opt into the transform — it injects the
-import at compile time.
+**without an import in every file**, use `as-str/global`. This transform only
+injects imports; it does not optimize native strings.
 
 1. Add the transform to your `asc` command or `asconfig.json`:
 
    ```bash
-   --transform as-str/transform
+   --transform as-str/global
    ```
 
    ```json
-   { "options": { "transform": ["as-str/transform"] } }
+   { "options": { "transform": ["as-str/global"] } }
    ```
 
 2. Add the ambient typings so your editor resolves the globals — extend
@@ -128,12 +156,28 @@ The transform only injects names a file actually uses and doesn't already
 import, and never rewrites the library's own sources — so explicit imports keep
 working and the two styles mix freely.
 
-> How it works: the transform runs in `afterParse`, prepends an
-> `import { … } from "as-str/assembly/index"` to each user source that needs it
-> (computing the specifier the same way json-as does), and force-parses the
-> `str` module so the import resolves even when nothing else imports it. The
-> `globals/index.d.ts` typings are editor-only — asc never loads them, so they
-> can't collide with the injected import.
+The `globals/index.d.ts` typings are editor-only. The transform injects the
+matching imports at compile time, so the editor globals cannot collide with
+generated declarations.
+
+## SIMD
+
+The scanning hot paths (`indexOf`, `includes`, `compare`) ship a SWAR kernel by
+default and a SIMD kernel when you compile with:
+
+```bash
+--enable simd
+```
+
+With SIMD off, the v128 code is dead-code-eliminated — you only pay for the tier
+you build. Nothing else changes; results are identical.
+
+## UTF-8 views
+
+If your text is already UTF-8 bytes (files, network, JSON), reach for
+[`str8`](./str8) — the byte-indexed UTF-8 sibling of `str` — and slice/search it
+without transcoding to UTF-16. Bridge between the two with `.toStr()` /
+`.toStr8()`.
 
 ## Next
 

@@ -33,6 +33,8 @@ method.toString(); // "GET" — materialized on demand
   `String.UTF8` / `String.UTF16`, running off the view's pointer range.
 - **GC-safe** — a view keeps its backing string reachable; chains of views
   anchor to the original, never to intermediates.
+- **Automatic optimization** — `as-str/auto` can migrate proven-safe internal
+  native strings to views while preserving exported and external signatures.
 - **[`str8`](./str8)** — a byte-indexed UTF-8 sibling (Rust/Go model) for data
   that is already UTF-8, plus callable `str(x)` / `str8(x)` converters.
 

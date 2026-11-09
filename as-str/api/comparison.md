@@ -68,3 +68,34 @@ v[99]; // -1
 
 > `v[i]` returns a code-unit **value** (`i32`); for a one-unit **view** use
 > [`charAt`](./slicing).
+
+## Null and empty views
+
+Nullable `str` and `str8` values support equality-based null guards. Prefix
+`!` returns true for null or empty views, matching native string negation:
+
+```ts
+const empty = str.from("");
+!empty; // true
+```
+
+## Collection compatibility
+
+Use native `string` keys for content-based `Map` and `Set` lookup. AssemblyScript
+hashes class references by identity even when overloaded equality compares their
+contents. Distinct equal-content views therefore cannot reliably substitute for
+one another as keys. Convert with `.toString()` consistently at insertion and
+lookup. Views work as values in `Map<string, str>` and `Map<string, str8>`.
+
+In AssemblyScript 0.28, nullable view arrays cannot directly use `Array.join`:
+the standard library's null guard does not narrow classes with overloaded
+equality. Convert elements into native strings first:
+
+```ts
+const strings = new Array<string>();
+for (let i = 0; i < values.length; i++) {
+  const value = values[i];
+  strings.push(value === null ? "" : value!.toString());
+}
+const joined = strings.join(",");
+```

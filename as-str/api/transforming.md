@@ -35,8 +35,8 @@ str.from("7").padStart(3, "0"); // "007"
 str.from("7").padEnd(3, "0"); // "700"
 ```
 
-These build the pad fill inline rather than calling the native op, which makes
-them [faster than native](../performance#per-operation-speedup).
+These build the pad fill directly from the view. See the
+[performance guide](../performance) for workload-specific benchmarking.
 
 ## replace / replaceAll
 
@@ -49,9 +49,9 @@ str.from("a-b-c").replace("-", "+"); // "a+b-c"
 str.from("a-b-c").replaceAll("-", "+"); // "a+b+c"
 ```
 
-Both locate matches with the accelerated scan and assemble the result in one
-allocation — substantially faster than native, and **correct** where this `asc`
-version's `String#replaceAll` is not.
+Both locate matches with the accelerated scan and assemble the native result
+without first materializing the receiver. Performance depends on the inputs
+and compiler version.
 
 ## toUpperCase / toLowerCase
 

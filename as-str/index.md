@@ -8,25 +8,26 @@ pointers into that data. Slicing, trimming, and searching just move the two
 pointers — **no characters are copied** until you ask for a real `string` back
 with `.toString()`.
 
-It ships as a single class with the **full native `String` surface**, so it
-reads like `string` but allocates only at the boundary where you actually need
-an owned string.
+It provides UTF-16 (`Str` / `str`) and UTF-8 (`Str8` / `str8`) views, plus
+transforms that optimize supported native string operations. Manual views
+allocate small wrapper objects; zero-copy means the character data is shared.
+The transforms can eliminate wrappers when scalar or packed-span lowering is safe.
 
 ```ts
 import { str } from "as-str";
 
 const real: string = "GET /index.html 200 1043";
-const method = str.slice(real, 0, 3); // "GET" — a view, no allocation
+const method = str.slice(real, 0, 3); // "GET" — one wrapper, no character copy
 method.toString(); // "GET" — materialized on demand
 ```
 
 ## What you get
 
 - **Views** — `slice`, `substring`, `substr`, `trim*`, `charAt`, `at`, and
-  `split` return another `str`; the backing bytes are never copied.
-- **The full `String` surface** — every native method, as both instance methods
+  `split` share backing data (`split` returns an array of views).
+- **String-style API** — instance methods
   (`v.indexOf(…)`) and free functions (`str.indexOf(s, …)`).
-- **Operators** — `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, and `v[i]` indexing.
+- **Operators** — `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `!`, and numeric `v[i]` indexing.
 - **Accelerated scans** — `indexOf` / `includes` / `compare` run SWAR by default
   and SIMD when compiled with `--enable simd`.
 - **Encoding** — `str.UTF8` / `str.UTF16`, a drop-in for

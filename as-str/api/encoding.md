@@ -37,6 +37,9 @@ str.UTF16.validate(v); // well-formed UTF-16?
 str.UTF8.byteLength(v); // UTF-8 byte length of the view
 const u8 = str.UTF8.encode(v); // ArrayBuffer of UTF-8 bytes
 str.UTF8.decode(u8); // str round-trip
+
+// Public error-mode enum, also available as Str.UTF8.ErrorMode
+str.UTF8.encode(v, false, str.UTF8.ErrorMode.ERROR);
 ```
 
 ### Full surface

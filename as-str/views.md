@@ -25,9 +25,13 @@ Bytes are copied only when you leave the view world:
   allocate their result (in a single pass, directly from the view).
 
 Everything else — `slice`, `substring`, `substr`, `charAt`, `at`, `trim*`,
-`split`, and all the queries (`length`, `indexOf`, `compare`, …) — moves
+and all the queries (`length`, `indexOf`, `compare`, …) — moves
 pointers or returns a primitive. A view op is one allocation (the result view);
-a query is zero.
+a query is zero. Manual `split` allocates an array and its field views.
+
+Automatic lowering can remove proven-safe wrappers using scalar values or
+packed spans. This allocation-free lowering is distinct from manual zero-copy
+views, which still allocate wrappers.
 
 ```ts
 const v = str.from("hello, world");

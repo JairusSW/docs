@@ -19,7 +19,7 @@ s.indexOf("llo"); // a byte offset (Go strings.Index / Rust .find)
 ```
 
 `str8` is import-only — it is not injected by the [global-mode
-transform](./getting-started#global-mode-optional).
+transform](./getting-started#global-mode).
 
 ## Construction
 

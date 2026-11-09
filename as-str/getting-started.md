@@ -2,10 +2,12 @@
 
 ## Install
 
-Add `str` to an AssemblyScript project:
+Add `as-str` to an AssemblyScript project:
 
 ```bash
 npm install as-str
+# or
+pnpm add as-str
 ```
 
 For manual use, import the `str` class directly:
@@ -16,14 +18,16 @@ import { str } from "as-str";
 
 The encoding namespaces (`str.UTF8` / `str.UTF16`) are powered by
 [`utf-as`](https://github.com/JairusSW/utf-as), pulled in automatically as a
-dependency.
+bundled runtime dependency. A separate consumer installation of `utf-as` is
+not required, including with pnpm's isolated layout.
 
 ## Manual mode
 
 ### Create your first view
 
 Wrap a real `string` with `str.from`, then slice, search, and trim without
-allocating. Materialize back to a `string` with `.toString()` only when you need
+copying its characters. Wrapping and each view-producing operation allocate
+a small object. Materialize back to a `string` with `.toString()` when you need
 one:
 
 ```ts
@@ -33,10 +37,11 @@ const v = str.from(real).trim(); // view -> "the quick brown fox"
 const word = v.slice(4, 9); // view -> "quick"
 
 word.length; // 5
-word.toString(); // "quick" — the only allocation here
+word.toString(); // "quick" — copies the selected characters into a native string
 ```
 
-`str` is a class, so it is also the type — annotate with `str`:
+`str` is a callable converter with static helpers and a type alias for `Str`.
+The uppercase class is also exported, as are `Str8` and `str8` for UTF-8:
 
 ```ts
 const v: str = str.from("hello");
@@ -104,8 +109,9 @@ export function formatLabel(value: string): string {
 }
 ```
 
-The exported function keeps its native `string` signature while the internal
-helper operates entirely on views. The transform leaves values native around
+This is an illustrative view-based lowering; the optimizer may instead use
+scalar lengths or packed spans with retained backing owners. The exported
+function keeps its native `string` signature. The transform leaves values native around
 unsafe pointer casts, raw loads, explicit assertions, native-string call
 parameters, and other boundaries it cannot prove safe.
 
@@ -140,9 +146,8 @@ injects imports; it does not optimize native strings.
 
    The preset re-points `typeRoots` (AssemblyScript's std config sets
    `typeRoots: ["types"]`, which would otherwise block resolving the globals from
-   `node_modules`). For pnpm or other non-hoisted layouts, drop a copy of
-   `node_modules/as-str/globals/index.d.ts` into your assembly directory instead
-   — any `.d.ts` in the project is picked up by the editor.
+   `node_modules`). Use the same preset with npm and pnpm; it includes the
+   uppercase `Str` type/value and the encoding namespace types.
 
 Now this compiles with no import:
 
@@ -158,7 +163,39 @@ working and the two styles mix freely.
 
 The `globals/index.d.ts` typings are editor-only. The transform injects the
 matching imports at compile time, so the editor globals cannot collide with
-generated declarations.
+generated declarations. Existing application bindings, including `@global`
+declarations, take precedence over injected names. Import `str8` / `Str8`
+explicitly when using UTF-8 views.
+
+## Single-pass mode
+
+`as-str/single` optimizes safe operations inside functions while retaining their
+parameter and return signatures. `as-str/auto` can also optimize internal
+function boundaries. Both inject the UTF-16 helpers where needed:
+
+```json
+{ "options": { "transform": ["as-str/single"] } }
+```
+
+Choose one transform per compilation: `global`, `single`, or `auto`.
+
+## Programmatic compiler use
+
+The transform entry points support direct ESM imports and dynamic imports:
+
+```js
+import asc from "assemblyscript/asc";
+import AutoTransform from "as-str/auto";
+
+const result = await asc.main(["assembly/index.ts", "--outFile", "build/app.wasm"], {
+  transforms: [new AutoTransform()],
+});
+if (result.error) throw result.error;
+```
+
+Use `as-str/global` or `as-str/single` in the same way. Keep explicit runtime
+imports on the public package path (`import { str } from "as-str"`) when mixing
+them with injected imports, including in linked workspaces.
 
 ## SIMD
 

@@ -2,12 +2,21 @@
 
 `str` exists to delete allocations. A view-producing op (`slice`, `trim`,
 `substring`, …) is a couple of pointer moves and **one** small object — versus
-native `String`, which allocates a new string and copies the bytes every time.
+native operations that materialize a substring. Some native no-op operations
+reuse their receiver, so allocation savings depend on the operation and input.
 The scanning ops add SWAR/SIMD kernels, and `replace` / `padStart` / `padEnd`
 are built directly from the view in a single pass.
 
-> Figures are microbenchmarks via [`as-bench`](https://github.com/JairusSW/as-bench),
-> all over one ~2 kb string, on wasmtime. Reproduce with `npm run charts:build`.
+Manual `str.slice(s, 1, 3)` allocates one wrapper;
+`str.from(s).slice(1, 3)` allocates two. The `single` and `auto` transforms can
+replace eligible intermediates with scalar values or packed spans, eliminating
+those wrappers while retaining the backing storage. Splitting manually also
+allocates an array and its element views.
+
+> The charts and ratios below are historical **v0.1.0** microbenchmarks via
+> [`as-bench`](https://github.com/JairusSW/as-bench), over one ~2 kb string on
+> Wasmtime. They are not measurements of the current release or guarantees for
+> other workloads. Regenerate with `npm run charts:build` for your environment.
 
 ## Per-Operation Speedup
 
@@ -28,10 +37,9 @@ the `1×` baseline, `str` (blue) its speedup:
 | `toUpperCase` / `toLowerCase` | ~parity (defers to native) |
 
 View ops sit at parity on a tiny slice — the avoided copy is cheap there — and
-pull ahead as the slice grows, since `str` never copies. `replace` /
-`replaceAll` are also **correct** where this `asc` version's native
-`String#replaceAll` corrupts longer replacements; str fuzzes them against a
-trusted reference instead.
+can avoid larger copies as the slice grows. Correctness is checked separately
+with differential tests and independent references; speedup does not establish
+semantic equivalence.
 
 ## Throughput
 
@@ -65,6 +73,8 @@ intrinsics on small/medium ranges, and fall back to `memory.copy` /
 
 ```bash
 npm run bench         # microbenchmarks (as-bench)
+npm run bench:runtime # equality, repeat, padding, search, and codepoint slices
+npm run bench:payloads # parsing, search, normalization, and encoding workflows
 npm run charts:build  # bench both builds and render charts to build/charts/
 npm run charts        # build and serve the charts locally
 ```
@@ -72,3 +82,27 @@ npm run charts        # build and serve the charts locally
 Both the SIMD and SWAR builds are covered by the test suite (run under two
 `as-test` modes) and by differential fuzzing against the native `String`
 methods, so the accelerated paths stay byte-exact with the standard library.
+
+## Comparing changes
+
+Save a baseline, then compare after changing the implementation:
+
+```bash
+npm run bench:runtime -- --out build/runtime-baseline
+npm run bench:runtime -- --baseline build/runtime-baseline
+
+npm run bench:payloads -- --out build/payload-baseline
+npm run bench:payloads -- --baseline build/payload-baseline \
+  --corpus build/payload-baseline/corpus.json
+```
+
+The runtime comparison checks result checksums and records alternating-run
+samples, build hashes, and runtime metadata. Payload records are checked against
+an independent JavaScript reference in UTF-16 and UTF-8 modes. Reuse the saved
+corpus so both revisions process the same inputs.
+
+Results are written to `build/runtime-performance/` and
+`build/payload-performance/`. Separate instrumented builds count allocation
+blocks. These counts do not measure peak memory or RSS. Record compiler/runtime
+versions, flags, hardware, power state, and concurrent load when publishing
+timings; compilation time and Wasm execution time are separate measurements.

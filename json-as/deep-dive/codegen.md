@@ -7,10 +7,11 @@ The single most important thing about `json-as` is that it isn't a parser you ca
 `json-as` is an AssemblyScript [compiler transform](https://www.assemblyscript.org/compiler.html#transforms). When `asc` parses your code, the transform visits every `@json` class and splices generated methods straight into its AST before compilation continues:
 
 - `__SERIALIZE` — used by `JSON.stringify`
-- `__DESERIALIZE_FAST` / `__DESERIALIZE_SLOW` — used by `JSON.parse<T>`
+- `__DESERIALIZE_FAST` / `__DESERIALIZE_SLOW` — used by `JSON.parse<T>`; fast readers are emitted only when supported by the schema
+- checked cursor support for strict typed parsing where applicable
 - `__INITIALIZE` — sets up field defaults
 
-Because this happens at build time against the concrete type, there's no runtime reflection, no field lookup by name, and no generic value tree to walk. Each type gets straight-line, monomorphized code. You can see it for yourself with [`JSON_WRITE`](../reference/customization#json-write).
+Because this happens at build time against the concrete type, there's no runtime reflection, no field lookup by name, and no generic value tree to walk. Each type gets straight-line, monomorphized code. You can see it for yourself with [`JSON_WRITE`](../reference/customization#json-write-and-json-debug).
 
 ## Serializing
 
@@ -39,9 +40,15 @@ No per-character key scan, no hashing — just load, compare, advance. If any co
 
 Pretty-printed JSON (spaces/newlines between tokens) breaks the packed template, so tier 2 re-matches the same packed key constants but calls `skipWhitespace` between every structural token. This keeps pretty input fast instead of collapsing to the general scanner — a meaningful win, since the entire object would otherwise drop to the slow path on a single stray space.
 
-### The slow path
+### Tier 3 — keyed fallback
 
-`__DESERIALIZE_SLOW` is the general, tolerant scanner: any key order, unknown keys, arbitrary whitespace. It's the correctness backstop the fast tiers fall through to.
+Eligible schemas have an order-independent keyed tier before the general reader. It dispatches known keys to schema-specific decoders and handles omissions. Reader availability depends on generic types, custom readers, defaults, and effects; generated callers target only methods the child actually has.
+
+Tier selection is local to **each invocation**. Every parse starts at tier 1 and only moves downward during that invocation. A prior pretty or reordered document does not pin the next parse to a slower tier.
+
+### General and checked readers
+
+`__DESERIALIZE_SLOW` is the general fallback for key order and whitespace the earlier tiers cannot handle. Strict parsing uses checked typed cursor support where available, or validation with checked generated fallbacks. Supplying a reusable destination does not relax strict typed-field checking.
 
 ## Chunking wide structs
 

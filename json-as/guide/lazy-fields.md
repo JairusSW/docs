@@ -64,7 +64,7 @@ Precedence: explicit `@lazy` / `JSON.Lazy<T>` always wins, then `@eager`, then t
 ## Interactions
 
 - **`@omitnull` / `@omitif`** — supported. Null-ness is decided from the stored slice without materializing the value; an `@omitif` predicate that reads the field will materialize it, otherwise it passes through raw.
-- **Generics** — a lazy field on a generic class works for **reference-type** instantiations (e.g. `Box<Owner>`); value-type instantiations (`Box<i32>`) are not supported.
+- **Generics** — lazy fields support both scalar and reference type arguments, including `JSON.Lazy<T>` in a generic class. Use an explicit initializer when your application needs a particular default.
 - **Custom serializers** — a class with a custom `@serializer`/`@deserializer` can't have lazy fields (the custom methods replace the generated ones the slots rely on); the transform reports an error.
 
 ## Caveats
@@ -82,4 +82,4 @@ Precedence: explicit `@lazy` / `JSON.Lazy<T>` always wins, then `@eager`, then t
 
 ## Performance
 
-Lazy is fastest when you **skip** fields or **forward** them, and the win grows with payload size. See [Performance](./performance#lazy-fields) for the eager-vs-lazy benchmarks.
+Lazy is fastest when you **skip** fields or **forward** them, and the win grows with payload size. See [Performance](./performance#lazy-and-dynamic-work) for the eager-vs-lazy benchmarks.

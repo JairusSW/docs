@@ -1,123 +1,101 @@
 # Performance
 
-`json-as` is built for multi-GB/s throughput. The generated code is monomorphized per type (no runtime schema walk), scanning is vectorized, and the hot paths avoid allocation. This page covers the knobs that matter.
+These charts were refreshed on **9 November 2026** for the 2.0 release candidate on an **Apple M4 Max (ARM64)**. The benchmarked package is byte-for-byte identical to the packaged candidate verified by the release checks. Timing batches used the shared host lock; background activity and power audits were retained. Treat these as results for this machine, not an isolated-host guarantee.
 
-## Per-payload performance
+The original AssemblyScript and JavaScript harnesses are retained. Built-in JavaScript appears first; SIMD and simdjson appear at the right. Charts with wide ranges use logarithmic scaling where needed: compare axis ticks, not just bar lengths. Select a chart to open its full-size SVG.
 
-Throughput across the standard payload suite (NAIVE / SWAR / SIMD vs built-in JS `JSON`). Higher is better.
+## Classic: JSON ↔ native structs
 
-**Serialize:**
+Deserialization parses JSON into native AssemblyScript model instances. The simdjson comparison materializes **owning C++ structs**, rather than stopping at a DOM or reusing a cached JSON string. Serialization starts with those native values and produces JSON text. The json-as compatibility runs have validation and the experimental string cache disabled.
 
-![Serialization Performance](/json-as/bench/serialize.svg)
+<a href="/json-as/bench/v2.0.0/classic-payload-deserialize-v8.svg"><img src="/json-as/bench/v2.0.0/classic-payload-deserialize-v8.svg" alt="Classic native-struct deserialization, V8" loading="lazy" decoding="async"></a>
 
-**Deserialize:**
+<a href="/json-as/bench/v2.0.0/classic-payload-serialize-v8.svg"><img src="/json-as/bench/v2.0.0/classic-payload-serialize-v8.svg" alt="Classic native-struct serialization, V8" loading="lazy" decoding="async"></a>
 
-![Deserialization Performance](/json-as/bench/deserialize.svg)
+The separate paired deserialization qualification used five alternating process pairs and exact graph checks across 16 layouts. json-as ranged from **0.954× to 2.199×** owning-struct simdjson; all layouts cleared the 90% comparison gate, while several remain slightly below full parity.
 
-## String throughput vs payload size
+| Twitter layout | json-as | simdjson owning structs | Ratio |
+| --- | ---: | ---: | ---: |
+| Minified | 2.420 GB/s | 1.332 GB/s | 1.817× |
+| Pretty | 2.389 GB/s | 1.719 GB/s | 1.390× |
 
-How throughput scales as string payloads grow from 1 KB to 1 MB. Higher is better.
-
-**Serialize:**
-
-![String serialization throughput vs payload size](/json-as/bench/serialize-throughput.png)
-
-**Deserialize:**
-
-![String deserialization throughput vs payload size](/json-as/bench/deserialize-throughput.png)
+These paired numbers are a separate measurement from the chart harness. Do not mix their samples or compare them with lazy/dynamic forwarding as if all routes materialized the same objects.
 
 <details>
-<summary>Object throughput (click to expand)</summary>
+<summary>Classic results under WAVM</summary>
 
-![Object serialization throughput vs payload size](/json-as/bench/obj-serialize-throughput.png)
+<a href="/json-as/bench/v2.0.0/classic-payload-deserialize-wavm.svg"><img src="/json-as/bench/v2.0.0/classic-payload-deserialize-wavm.svg" alt="Classic deserialization, WAVM" loading="lazy" decoding="async"></a>
 
-![Object deserialization throughput vs payload size](/json-as/bench/obj-deserialize-throughput.png)
+<a href="/json-as/bench/v2.0.0/classic-payload-serialize-wavm.svg"><img src="/json-as/bench/v2.0.0/classic-payload-serialize-wavm.svg" alt="Classic serialization, WAVM" loading="lazy" decoding="async"></a>
 
 </details>
 
-<details>
-<summary>Primitive (de)serialization (click to expand)</summary>
+## Overview and library comparisons
 
-Single-value throughput for the primitive types:
+<a href="/json-as/bench/v2.0.0/overview-serialize.svg"><img src="/json-as/bench/v2.0.0/overview-serialize.svg" alt="Overview serialization" loading="lazy" decoding="async"></a>
 
-![Primitive serialization](/json-as/bench/primitive-serialize.svg)
+<a href="/json-as/bench/v2.0.0/overview-deserialize.svg"><img src="/json-as/bench/v2.0.0/overview-deserialize.svg" alt="Overview deserialization" loading="lazy" decoding="async"></a>
 
-![Primitive deserialization](/json-as/bench/primitive-deserialize.svg)
+<a href="/json-as/bench/v2.0.0/library-serialize.svg"><img src="/json-as/bench/v2.0.0/library-serialize.svg" alt="Library serialization comparison" loading="lazy" decoding="async"></a>
 
-</details>
+<a href="/json-as/bench/v2.0.0/library-deserialize.svg"><img src="/json-as/bench/v2.0.0/library-deserialize.svg" alt="Library deserialization comparison" loading="lazy" decoding="async"></a>
 
-A multi-library comparison (json-as vs native `JSON`, `fast-json`, and `assemblyscript-json`) lives in the [repository README](https://github.com/JairusSW/json-as#performance).
+The overview, library, and classic charts use different workloads. Read their labels before comparing throughput between charts.
 
-## Scanning modes
+## Strings and objects by size
 
-Pick a backend at build time with `JSON_MODE` (see [Configuration](../reference/customization#json-mode)). All three are bit-for-bit equivalent — they trade speed for code size:
+<a href="/json-as/bench/v2.0.0/string-serialize.svg"><img src="/json-as/bench/v2.0.0/string-serialize.svg" alt="String serialization" loading="lazy" decoding="async"></a>
 
-| Mode | Scanning | Notes |
-| --- | --- | --- |
-| `SWAR` *(default)* | word-at-a-time | fast, no flags |
-| `SIMD` | 128-bit vectors | fastest on larger payloads; needs `--enable simd` |
-| `NAIVE` | byte-at-a-time | smallest code, slowest |
+<a href="/json-as/bench/v2.0.0/string-serialize-1mb.svg"><img src="/json-as/bench/v2.0.0/string-serialize-1mb.svg" alt="String serialization through 1 MB" loading="lazy" decoding="async"></a>
 
-```bash
-JSON_MODE=SIMD asc assembly/index.ts --transform json-as --enable simd
-```
+<a href="/json-as/bench/v2.0.0/string-deserialize.svg"><img src="/json-as/bench/v2.0.0/string-deserialize.svg" alt="String deserialization" loading="lazy" decoding="async"></a>
 
-## The fast path
+<a href="/json-as/bench/v2.0.0/string-deserialize-1mb.svg"><img src="/json-as/bench/v2.0.0/string-deserialize-1mb.svg" alt="String deserialization through 1 MB" loading="lazy" decoding="async"></a>
 
-For each struct the transform emits an unrolled, packed-key-template **fast path** that matches minified input directly, with a whitespace-tolerant tier and a general slow path as fallbacks. It's on by default; disable it with `JSON_USE_FAST_PATH=0` for smaller code when parse speed isn't critical. Pretty-printed (whitespace-heavy) input stays on a fast tier rather than collapsing to the slow scanner.
+### Why the two object charts differ
 
-## Reusing objects and buffers
+The short-range object chart batches a **55-byte simple object**; the 1 MB chart batches a **1,049-byte complex object**. They are different schemas and per-record costs, not two views of one continuous payload-size series. A jump between them is not evidence of a size-triggered SIMD speedup.
 
-`JSON.parse` and `JSON.stringify` both take an optional second argument to reuse an existing object graph / output string instead of allocating fresh (see [Basic Usage](./basic-usage#reusing-an-instance)). In a steady-state loop over the same shape this reuses nested structs, arrays, and strings in place — effectively **zero allocation** after the first call.
+<a href="/json-as/bench/v2.0.0/object-serialize.svg"><img src="/json-as/bench/v2.0.0/object-serialize.svg" alt="Simple-object serialization" loading="lazy" decoding="async"></a>
 
-```ts
-import { JSON } from "json-as";
+<a href="/json-as/bench/v2.0.0/object-serialize-1mb.svg"><img src="/json-as/bench/v2.0.0/object-serialize-1mb.svg" alt="Complex-object serialization through 1 MB" loading="lazy" decoding="async"></a>
 
-@json
-class Vec3 {
-  x: f64 = 0;
-  y: f64 = 0;
-  z: f64 = 0;
-}
+<a href="/json-as/bench/v2.0.0/object-deserialize.svg"><img src="/json-as/bench/v2.0.0/object-deserialize.svg" alt="Simple-object deserialization" loading="lazy" decoding="async"></a>
 
-const v = new Vec3();
-for (let i = 0; i < 1000; i++) {
-  JSON.parse<Vec3>('{"x":1,"y":2,"z":3}', v); // fills `v`, no new allocation
-}
-```
+<a href="/json-as/bench/v2.0.0/object-deserialize-1mb.svg"><img src="/json-as/bench/v2.0.0/object-deserialize-1mb.svg" alt="Complex-object deserialization through 1 MB" loading="lazy" decoding="async"></a>
 
-## Lazy fields
+## Primitives and runtimes
 
-Deferring fields with [`@lazy` / `JSON.Lazy<T>` / `@json({ lazy })`](./lazy-fields) skips parsing the fields you don't read — the win grows with payload size, and round-tripping an untouched object just forwards its raw bytes.
+<a href="/json-as/bench/v2.0.0/primitive-serialize.svg"><img src="/json-as/bench/v2.0.0/primitive-serialize.svg" alt="Primitive serialization" loading="lazy" decoding="async"></a>
 
-**Deserialize** — parse into the struct without reading the deferred fields:
+<a href="/json-as/bench/v2.0.0/primitive-deserialize.svg"><img src="/json-as/bench/v2.0.0/primitive-deserialize.svg" alt="Primitive deserialization" loading="lazy" decoding="async"></a>
 
-![Deserialize: eager vs lazy by payload size](/json-as/bench/lazy-deserialize.svg)
+The runtime suite covers Wago, Wasmtime, WAVM, wazero, V8, and Bun. It is a separate execution comparison, not the owning-struct classic comparison above.
 
-**Round-trip** (`parse → stringify`) of an untouched object — the proxy / filter / forward case never parses or re-serializes the deferred fields:
+<a href="/json-as/bench/v2.0.0/runtimes-serialize.svg"><img src="/json-as/bench/v2.0.0/runtimes-serialize.svg" alt="Serialization across Wasm runtimes" loading="lazy" decoding="async"></a>
 
-![Round-trip: eager vs lazy by payload size](/json-as/bench/lazy-roundtrip.svg)
+<a href="/json-as/bench/v2.0.0/runtimes-deserialize.svg"><img src="/json-as/bench/v2.0.0/runtimes-deserialize.svg" alt="Deserialization across Wasm runtimes" loading="lazy" decoding="async"></a>
 
-**Serialize** — re-emitting a parsed object forwards the untouched fields' raw bytes instead of rebuilding them:
+## Fast readers and reuse
 
-![Serialize: eager vs lazy by payload size](/json-as/bench/lazy-serialize.svg)
+Generated readers start at tier 1 on **each invocation**, then only tier down as needed: packed templates, whitespace-tolerant matching, and keyed/general fallback. Strict mode additionally uses checked cursor paths where supported. See [Generated Code](../deep-dive/codegen) and [Configuration](../reference/customization).
 
-**Access patterns** — skipping, reading one field, or forwarding is far faster than eager; reading *every* deferred field costs a little more, since the work is deferred, not removed:
+Reuse can avoid allocations for eligible present members. It still restores omitted defaults and prevents shared writable storage from corrupting another field. Allocation depends on defaults, growth, ownership, and custom codecs; it is not guaranteed to be zero for every schema.
 
-![Access pattern: eager vs lazy](/json-as/bench/lazy-access-pattern.svg)
+## Lazy and dynamic work
 
-## Running the benchmarks
+These routes can retain raw ranges or cached materializations. Parsing without reading deferred fields, forwarding unchanged JSON, and fully materializing native structs are different amounts of work.
 
-The benchmarks live in the [json-as repo](https://github.com/JairusSW/json-as). From a checkout:
+<a href="/json-as/bench/v2.0.0/lazy-deserialize.svg"><img src="/json-as/bench/v2.0.0/lazy-deserialize.svg" alt="Lazy deserialization" loading="lazy" decoding="async"></a>
 
-```bash
-bun run bench:as medium --mode simd
-bun run bench:as medium --mode swar
-bun run bench                       # full suite + charts
-```
+<a href="/json-as/bench/v2.0.0/lazy-roundtrip.svg"><img src="/json-as/bench/v2.0.0/lazy-roundtrip.svg" alt="Lazy round trip" loading="lazy" decoding="async"></a>
 
-A multi-library comparison (json-as vs native `JSON`, `fast-json`, and `assemblyscript-json`) and the per-payload JS comparison charts are published in the repository's README.
+<a href="/json-as/bench/v2.0.0/lazy-serialize.svg"><img src="/json-as/bench/v2.0.0/lazy-serialize.svg" alt="Lazy serialization" loading="lazy" decoding="async"></a>
 
-## What the numbers include
+<a href="/json-as/bench/v2.0.0/lazy-access-pattern.svg"><img src="/json-as/bench/v2.0.0/lazy-access-pattern.svg" alt="Lazy access patterns" loading="lazy" decoding="async"></a>
 
-Published figures reflect end-to-end work — allocating the destination object/array before deserializing into it, building the output string, and so on. Raw parser throughput is higher than the published numbers because these intentionally include that allocation/setup cost.
+## Running and inspecting benchmarks
+
+The harnesses and commands live in the [repository](https://github.com/JairusSW/json-as#performance). Record the exact revision, flags, runtime, architecture, input layout, and whether allocation/reuse/materialization is included. Repeated serialization of an untouched dynamic value can forward its original source; it is not a fresh native-struct serialization comparison.
+
+The [complete chart set](https://github.com/JairusSW/json-as/tree/docs/charts/v2.0.0) includes PNG copies. All results here use the 2.0 chart set rather than the older 1.x assets.

@@ -1,6 +1,6 @@
 # Custom Serialization
 
-Sometimes a type should have its own wire format instead of the generated object form — a compact string, a backward-compatible layout, or a custom encoding for a built-in container. Add a `@serializer` / `@deserializer` pair to take over both directions.
+Sometimes a type should have its own wire format instead of the generated object form — a compact string, a backward-compatible layout, or a custom encoding for a built-in container. Add a `@serializer` / `@deserializer` pair to take over both directions. The capabilities are independent: a serializer-only class retains generated reading, and a deserializer-only class retains generated writing. Keep both directions compatible with the same wire representation.
 
 ## The contract
 

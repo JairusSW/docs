@@ -4,7 +4,7 @@
 
 ## One buffer, reused
 
-There's a single module-level output buffer. `JSON.stringify` doesn't allocate a fresh string and append to it — it writes bytes into this buffer at a moving `offset`, then hands back a string view of the written region. Because the buffer persists across calls, the common case allocates nothing for the buffer itself; it only ever *grows*, never churns.
+There's a single module-level output buffer. `JSON.stringify` doesn't allocate a fresh string and append to it — it writes bytes into this buffer at a moving `offset`, then returns the output string. Because the buffer persists across calls, the common case allocates nothing for the buffer itself; it only ever *grows*, never churns.
 
 The structural bytes a serializer writes (keys, `{`, `,`) are compile-time constants emitted as packed stores — see [Generated Code](./codegen#serializing) — so the buffer just receives wide writes.
 
@@ -25,10 +25,10 @@ Because the upfront estimate normally covers everything, fixed-size structural w
 
 Both entry points take an optional target to write *into*:
 
-- `JSON.stringify(value, out)` overwrites the existing `out` string in place (or `__renew`s it only when the length changes) instead of minting a new one.
+- `JSON.stringify(value, out)` reuses eligible heap output storage. Static strings, including previous boolean/null results, receive fresh writable storage instead. Always assign the returned string.
 - `JSON.parse<T>(data, out)` fills an existing object graph — nested structs threaded through as the destination, arrays keeping their capacity, strings renewed only when their byte length differs.
 
-Run the same shape through a loop and, after the first iteration, both directions settle into reusing every allocation — the heap delta drops to **0**. This is what makes json-as suitable for hot encode/decode loops over a fixed schema.
+Some steady-state schemas reach zero allocations, but that is not a universal API guarantee. Omitted members still restore declared defaults, and initializers, custom codecs, growth, or shared backing storage can require allocation. Present members reuse storage only when ownership makes it safe.
 
 ## Deserialize avoids copies too
 

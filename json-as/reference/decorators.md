@@ -21,7 +21,7 @@ class Account {
 
 ### `@json`
 
-Marks a class for transform-generated serialization/deserialization. Required on every type passed to `JSON.parse` / `JSON.stringify`, including nested types.
+Marks a class for transform-generated serialization/deserialization. Use it on application schemas, including nested schemas. Native supported types do not need it. Undecorated base declarations can contribute inherited fields to a decorated child; the transform preserves their defaults and declaration bindings.
 
 ```ts ignore
 @json
@@ -51,7 +51,7 @@ Use a different JSON key than the field name.
 
 ### `@omit`
 
-Never serialize the field (still accepted on parse).
+Exclude the field from the generated JSON schema. Input does not populate it; its application initializer still runs. An omitted override also masks the inherited JSON field.
 
 ### `@omitnull()`
 
@@ -68,7 +68,7 @@ Skip the field on serialize when `condition` is truthy. The condition is either 
 
 ### `@optional`
 
-Mark a field optional for **deserialization**: the key may be absent from the input (or appear in any order), and the field keeps its default. Unlike `@omitnull()`/`@omitif()` it does **not** omit the field on serialize and has no nullability requirement — it only opts the field into the order-tolerant fast path on parse.
+Mark a field optional for **deserialization**: the key may be absent from the input (or appear in any order), and the field uses its declared default, including when parsing into a populated destination. Unlike `@omitnull()`/`@omitif()` it does **not** omit the field on serialize and has no nullability requirement — it only opts the field into the order-tolerant fast path on parse.
 
 ```ts ignore
 @optional retweeted_status: Retweet | null = null; // key may be absent on parse

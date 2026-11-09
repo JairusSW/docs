@@ -76,6 +76,7 @@ export default defineConfig({
           items: [
             { text: "Overview", link: "/json-as/" },
             { text: "Getting Started", link: "/json-as/guide/getting-started" },
+            { text: "Upgrading to 2.0", link: "/json-as/guide/upgrading-to-2" },
           ],
         },
         {

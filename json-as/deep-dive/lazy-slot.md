@@ -20,7 +20,7 @@ The slot is read like a tagged union (a NaN-box, in spirit):
 | --- | --- |
 | `0` | **absent** — the key wasn't in the input; return the field's default |
 | `u64.MAX_VALUE` | **materialized** — the value lives in the memo (`__owner_val`) |
-| anything else | a **slice range**, packed as `(start << 32) | end` — byte offsets into `__src`, not yet parsed |
+| anything else | a **slice range**, packed as `(start << 32) | end` — absolute byte pointers into the source anchored by `__src`, not yet parsed |
 
 The trick that makes this unambiguous: `start` is a live heap pointer, which on wasm32 is never anywhere near 4 GB, so its high 32 bits can never be all-ones. That frees `u64.MAX_VALUE` (`0xFFFFFFFF_FFFFFFFF`) to mean "materialized" with zero chance of colliding with a real range.
 
@@ -33,12 +33,14 @@ get owner(): Owner {
   const lz = this.__owner_lz;
   if (lz != 0 && lz != u64.MAX_VALUE) {
     // first read of a range -> parse the slice once, flip to materialized
-    this.__owner_val = JSON.__deserialize<Owner>(<usize>(lz >>> 32), <usize>(<u32>lz));
+    this.__owner_val = JSON.__deserializeLazy<Owner>(<usize>(lz >>> 32), <usize>(<u32>lz), this.__src);
     this.__owner_lz = u64.MAX_VALUE;
   }
   return this.__owner_val as Owner; // (0 -> default lives here too)
 }
 ```
+
+The owner-aware helper keeps the original parse source available while materializing nested deferred values, including inherited fields. This sketch omits generated name hygiene and type-specific handling.
 
 So a field you never read is never parsed; a field you read once is parsed once and cached as `materialized`.
 

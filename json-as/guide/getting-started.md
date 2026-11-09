@@ -8,7 +8,26 @@
 npm install json-as
 ```
 
-`json-as` ships the runtime library and the transform together.
+`json-as` ships the runtime library and the transform together. Install the compiler in your application too:
+
+~~~bash
+npm install --save-dev assemblyscript@^0.28.18
+~~~
+
+These docs target the **2.0.0 candidate**; npm currently serves 1.6.3. Until 2.0 is published, build and pack the candidate repository, then install its tarball:
+
+~~~bash
+# In the json-as checkout:
+npm ci
+npm run build:transform
+npm pack
+
+# In your consumer:
+npm install /absolute/path/to/json-as/json-as-2.0.0.tgz
+# Or: pnpm add /absolute/path/to/json-as/json-as-2.0.0.tgz
+~~~
+
+The 2.0 artifact declares AssemblyScript as a peer and bundles its formatter dependency. pnpm does not need a direct `xjb-as` dependency or a hoisting workaround. See [Upgrading to 2.0](./upgrading-to-2).
 
 ## Enabling the transform
 
@@ -75,9 +94,11 @@ JSON_MODE=SIMD  asc assembly/index.ts --transform json-as --enable simd
 JSON_MODE=NAIVE asc assembly/index.ts --transform json-as
 ```
 
-- **`SWAR`** *(default)* — word-at-a-time scanning. Fast, no extra flags.
-- **`SIMD`** — 128-bit vector scanning. Fastest on larger payloads; requires `--enable simd`.
-- **`NAIVE`** — byte-at-a-time. Smallest code, slowest.
+- **`SWAR`** — word-at-a-time scanning, selected by default when SIMD is not enabled.
+- **`SIMD`** — 128-bit vector scanning; requires `--enable simd` and is selected automatically when that feature is enabled.
+- **`NAIVE`** — code-unit-at-a-time scanning.
+
+Measure your workload: speed and code size depend on the schema and payload.
 
 All three produce identical results — only throughput and code size differ. See [Performance](./performance) for the numbers.
 

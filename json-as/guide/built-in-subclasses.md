@@ -24,7 +24,7 @@ JSON.stringify<MyBytes>(mb); // '[1,2,3]'
 JSON.stringify(JSON.parse<MyBytes>("[4,5,6]")); // '[4,5,6]'
 ```
 
-This is the right choice when you just want a named or extended container that still reads/writes as the underlying type.
+This is the right choice when you want a named or extended container with the native JSON representation. Parsing, serialization, and dynamic conversion use native storage operations: overriding `length`, indexing, `push`, Map/Set accessors or mutators, or Date setters does not change that representation. Constructor-defined application state is preserved. Use custom codecs for a different wire format.
 
 ## Decorated: treated as a generated struct
 

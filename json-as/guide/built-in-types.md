@@ -10,7 +10,7 @@
 | Time | `Date` |
 | Collections | `Array<T>`, `StaticArray<T>`, `Map<K, V>`, `Set<T>` |
 | Binary | typed arrays (`Uint8Array`, `Float64Array`, …), `ArrayBuffer` |
-| Dynamic | [`JSON.Value`, `JSON.Obj`, `JSON.Raw`](../reference/dynamic-types) |
+| Dynamic | [`JSON.Value`, `JSON.Obj`, `JSON.Arr`, `JSON.Raw`](../reference/dynamic-types) |
 
 ## Primitives
 
@@ -53,7 +53,7 @@ Arrays nest freely — `Vec3[][]`, `string[]`, arrays of `@json` classes, and so
 
 ## `Map` and `Set`
 
-A `Map` serializes to a JSON **object** (keys must be strings); a `Set` serializes to a JSON **array** (duplicates collapse on parse).
+A `Map` serializes to a JSON **object** (string keys are the simplest choice; supported non-string keys are encoded as property names); a `Set` serializes to a JSON **array** (duplicates collapse on parse).
 
 ```ts
 const m = JSON.parse<Map<string, i32>>('{"a":1,"b":2}');
@@ -87,4 +87,4 @@ decoded.byteLength; // 3
 
 ## Dynamic values
 
-When a field's type isn't known up front, use [`JSON.Value`, `JSON.Obj`, or `JSON.Raw`](../reference/dynamic-types). They can also hold built-in collections, typed arrays, and `ArrayBuffer`, and re-serialize them faithfully.
+When a field's type isn't known up front, use [`JSON.Value`, `JSON.Obj`, `JSON.Arr`, or `JSON.Raw`](../reference/dynamic-types). They can also hold built-in collections, typed arrays, and `ArrayBuffer`, and re-serialize them faithfully.

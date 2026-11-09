@@ -61,9 +61,20 @@ JSON.parse<User>('{"user_id":7,"name":"x"}').id; // 7
 
 ## Optional fields
 
-Three decorators drop a field from the **output** (parsing still accepts the key either way):
+Use `@optional` when an input key may be absent. It does not omit that field from output:
 
-- `@omit` — never serialized.
+~~~ts
+@json
+class Options {
+  @optional retries: i32 = 3;
+}
+
+JSON.parse<Options>("{}").retries; // 3
+~~~
+
+Three decorators control **output** omission:
+
+- `@omit` — excluded from the JSON schema; input does not populate this application field.
 - `@omitnull()` — skipped when the value is `null`.
 - `@omitif(predicate)` — skipped when the predicate (given the instance) returns `true`.
 
@@ -145,7 +156,9 @@ let out = "";
 out = JSON.stringify(new Point(), out); // reuses `out`'s buffer when it can
 ```
 
-On a steady-state re-parse of the same shape this reuses nested structs, arrays, and strings in place — effectively zero allocation after the first call.
+An omitted optional field is restored to its declared default, not carried over from an earlier document. Present nested structs, arrays, and strings can reuse eligible storage. Shared backing buffers may require replacement to keep fields independent; defaults and custom codecs can also allocate.
+
+Always retain the returned value, since reuse is an optimization and a destination may be replaced. Output reuse accepts earlier serialization results, including static boolean/null strings; shared literals are not overwritten. See [Upgrading to 2.0](./upgrading-to-2#reused-destinations-restore-defaults).
 
 ## Next steps
 

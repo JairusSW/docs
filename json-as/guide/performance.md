@@ -64,7 +64,7 @@ These object and string measurements were rerun on ARM64 on battery, with power 
 <a href="/json-as/bench/v2.0.0/object-deserialize.svg"><img src="/json-as/bench/v2.0.0/object-deserialize.svg" alt="Growing-object deserialization, ten document sizes" loading="lazy" decoding="async"></a>
 
 
-All charts use the same overview typography and a 1.6.1-style single-line sidebar showing the recorded date, release, engine version, revision, branch and architecture. Mixed captures are labeled explicitly. Companion `.metadata.json` files retain the detailed source, runtime and output-policy records.
+All charts use the same overview typography and a 1.6.1-style single-line sidebar showing the recorded date, release, engine version, branch and CPU model. Hardware models come from the captured benchmark host information. Companion `.metadata.json` files retain the detailed source, runtime and output-policy records.
 
 The simdjson reference serializes owning native fields into a fresh output string on every operation. It does not cache serialized JSON or use DOM minification. Benchmark warm-up warms executable code; each measured call still reconstructs its output. The owning-writer regression also changes fields between calls and verifies the new output.
 

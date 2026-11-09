@@ -185,15 +185,22 @@ The transform entry points support direct ESM imports and dynamic imports:
 
 ```js
 import asc from "assemblyscript/asc";
-import AutoTransform from "as-str/auto";
+import { fileURLToPath } from "node:url";
 
-const result = await asc.main(["assembly/index.ts", "--outFile", "build/app.wasm"], {
-  transforms: [new AutoTransform()],
-});
+const transformPath = fileURLToPath(import.meta.resolve("as-str/auto"));
+const result = await asc.main([
+  "assembly/index.ts",
+  "--outFile", "build/app.wasm",
+  "--transform", transformPath,
+]);
 if (result.error) throw result.error;
 ```
 
-Use `as-str/global` or `as-str/single` in the same way. Keep explicit runtime
+Passing the resolved path lets the compiler initialize the transform's compiler
+context. The class is also directly importable with
+`import AutoTransform from "as-str/auto"` for integrations that initialize that
+context themselves. Use `as-str/global` or `as-str/single` in the same way.
+Keep explicit runtime
 imports on the public package path (`import { str } from "as-str"`) when mixing
 them with injected imports, including in linked workspaces.
 

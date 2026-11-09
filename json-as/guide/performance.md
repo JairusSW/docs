@@ -56,13 +56,17 @@ The combined chart has **ten document sizes from about 100 KiB to 8 MiB**, all b
 
 The typed AssemblyScript reader reuses a native destination, as in the existing harness. Built-in JavaScript parsing constructs a fresh result. The separately labeled JSON.Obj deserialization series defers materialization; it does less work than fully materializing a native model. Untouched JSON.Obj source forwarding is excluded from the serialization charts.
 
-These object and string measurements were rerun on ARM64 with power and host-load audits retained. String samples use the same ten targets, measured by their encoded JSON size. The fixture and input semantics changed, so the old repeated-record curves are not a runtime-regression baseline.
+These object and string measurements were rerun on ARM64 on battery, with power and host-load audits retained. String samples use the same ten targets, measured by their encoded JSON size. The fixture and input semantics changed, so the old repeated-record curves are not a runtime-regression baseline.
 
 <a href="/json-as/bench/v2.0.0/object-serialize.svg"><img src="/json-as/bench/v2.0.0/object-serialize.svg" alt="Growing-object serialization, ten document sizes" loading="lazy" decoding="async"></a>
 
 
 <a href="/json-as/bench/v2.0.0/object-deserialize.svg"><img src="/json-as/bench/v2.0.0/object-deserialize.svg" alt="Growing-object deserialization, ten document sizes" loading="lazy" decoding="async"></a>
 
+
+All charts use the same overview typography and a 1.6.1-style single-line sidebar showing the recorded date, release, engine version, revision, branch and architecture. Mixed captures are labeled explicitly. Companion `.metadata.json` files retain the detailed source, runtime and output-policy records.
+
+The simdjson reference serializes owning native fields into a fresh output string on every operation. It does not cache serialized JSON or use DOM minification. Benchmark warm-up warms executable code; each measured call still reconstructs its output. The owning-writer regression also changes fields between calls and verifies the new output.
 
 ## Primitives and runtimes
 

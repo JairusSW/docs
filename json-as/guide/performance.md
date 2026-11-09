@@ -2,7 +2,7 @@
 
 These charts were refreshed on **9 November 2026** for the 2.0 release candidate on an **Apple M4 Max (ARM64)**. The measurements use the 2.0 candidate runtime and transform. Timing batches used the shared host lock; background activity and power audits were retained. Treat these as results for this machine, not an isolated-host guarantee.
 
-The original AssemblyScript and JavaScript harnesses are retained. Built-in JavaScript appears first; SIMD and simdjson appear at the right. Charts with wide ranges use logarithmic scaling where needed: compare axis ticks, not just bar lengths. Select a chart to open its full-size SVG.
+The original AssemblyScript and JavaScript harnesses are retained. Built-in JavaScript appears first; SIMD and simdjson appear at the right. Deserialization charts use linear axes. Serialization charts with wide ranges use logarithmic scaling where needed: compare axis ticks, not just bar lengths. Select a chart to open its full-size SVG.
 
 ## Classic: JSON ↔ native structs
 

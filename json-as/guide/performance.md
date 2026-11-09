@@ -1,6 +1,6 @@
 # Performance
 
-These charts were refreshed on **9 November 2026** for the 2.0 release candidate on an **Apple M4 Max (ARM64)**. The benchmarked package is byte-for-byte identical to the packaged candidate verified by the release checks. Timing batches used the shared host lock; background activity and power audits were retained. Treat these as results for this machine, not an isolated-host guarantee.
+These charts were refreshed on **9 November 2026** for the 2.0 release candidate on an **Apple M4 Max (ARM64)**. The measurements use the 2.0 candidate runtime and transform. Timing batches used the shared host lock; background activity and power audits were retained. Treat these as results for this machine, not an isolated-host guarantee.
 
 The original AssemblyScript and JavaScript harnesses are retained. Built-in JavaScript appears first; SIMD and simdjson appear at the right. Charts with wide ranges use logarithmic scaling where needed: compare axis ticks, not just bar lengths. Select a chart to open its full-size SVG.
 
@@ -52,17 +52,21 @@ The overview, library, and classic charts use different workloads. Read their la
 
 <a href="/json-as/bench/v2.0.0/string-deserialize-1mb.svg"><img src="/json-as/bench/v2.0.0/string-deserialize-1mb.svg" alt="String deserialization through 1 MB" loading="lazy" decoding="async"></a>
 
-### Why the two object charts differ
+### One growing object across both size ranges
 
-The short-range object chart batches a **55-byte simple object**; the 1 MB chart batches a **1,049-byte complex object**. They are different schemas and per-record costs, not two views of one continuous payload-size series. A jump between them is not evidence of a size-triggered SIMD speedup.
+Both ranges start from the **same 1,024-byte row fixture**. Larger inputs add rows to one object's `records` array. Each measured operation parses or serializes that whole JSON document once; the x-axis is its actual UTF-8 size. There is no record/schema switch at 1 MiB and no batch of separate JSON documents.
 
-<a href="/json-as/bench/v2.0.0/object-serialize.svg"><img src="/json-as/bench/v2.0.0/object-serialize.svg" alt="Simple-object serialization" loading="lazy" decoding="async"></a>
+The typed AssemblyScript reader reuses a native destination, as in the existing harness. Built-in JavaScript parsing constructs a fresh result. The separately labeled JSON.Obj deserialization series defers materialization; it does less work than fully materializing a native model. Untouched JSON.Obj source forwarding is excluded from the serialization charts.
 
-<a href="/json-as/bench/v2.0.0/object-serialize-1mb.svg"><img src="/json-as/bench/v2.0.0/object-serialize-1mb.svg" alt="Complex-object serialization through 1 MB" loading="lazy" decoding="async"></a>
+These object measurements were rerun on battery with power and host-load audits retained. The fixture and input semantics changed, so the old repeated-record curves are not a runtime-regression baseline.
 
-<a href="/json-as/bench/v2.0.0/object-deserialize.svg"><img src="/json-as/bench/v2.0.0/object-deserialize.svg" alt="Simple-object deserialization" loading="lazy" decoding="async"></a>
+<a href="/json-as/bench/v2.0.0/object-serialize.svg"><img src="/json-as/bench/v2.0.0/object-serialize.svg" alt="Growing-object serialization, full range" loading="lazy" decoding="async"></a>
 
-<a href="/json-as/bench/v2.0.0/object-deserialize-1mb.svg"><img src="/json-as/bench/v2.0.0/object-deserialize-1mb.svg" alt="Complex-object deserialization through 1 MB" loading="lazy" decoding="async"></a>
+<a href="/json-as/bench/v2.0.0/object-serialize-1mb.svg"><img src="/json-as/bench/v2.0.0/object-serialize-1mb.svg" alt="Growing-object serialization through 1 MiB" loading="lazy" decoding="async"></a>
+
+<a href="/json-as/bench/v2.0.0/object-deserialize.svg"><img src="/json-as/bench/v2.0.0/object-deserialize.svg" alt="Growing-object deserialization, full range" loading="lazy" decoding="async"></a>
+
+<a href="/json-as/bench/v2.0.0/object-deserialize-1mb.svg"><img src="/json-as/bench/v2.0.0/object-deserialize-1mb.svg" alt="Growing-object deserialization through 1 MiB" loading="lazy" decoding="async"></a>
 
 ## Primitives and runtimes
 

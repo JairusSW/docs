@@ -4,6 +4,33 @@ A **lazy** field defers parsing. Instead of materializing the value during `JSON
 
 This is ideal for large payloads where you touch only a few fields, and for proxy / filter / forward workloads.
 
+## Access-based parsing for ordinary classes
+
+Ordinary `@json` classes use access analysis by default, without requiring a
+lazy marker. When a visible `JSON.parse<T>` result stays local, the transform
+can generate a reader that scans proven-unused fields without decoding them:
+
+```ts
+@json
+class Point {
+  x: f32 = 0;
+  y: f32 = 0;
+  name: string = "";
+}
+
+const point = JSON.parse<Point>(input);
+const x = point.x; // y and name can be skipped at this parse site
+```
+
+This produces an ordinary object with no lazy slots or getters. When all fields
+are needed, the result escapes, or its uses cannot be proven safe, the parser
+retains eager behavior. Observable initializer and custom-decoder effects are
+preserved. Direct array-typed fields remain eager. Set
+`JSON_ACCESS_SPECIALIZATION=false` at compile time to disable this optimization.
+
+Explicit lazy fields, described below, remain available when a caller needs a
+value to be materialized on first access.
+
 ## Marking a field
 
 Three equivalent ways, pick whichever reads best:

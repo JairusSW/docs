@@ -21,21 +21,24 @@ class Owner {
 class Repo {
   name: string = ""; // eager (parsed up front)
   @lazy owner: Owner = new Owner(); // decorator form
-  files: JSON.Lazy<string[]> = []; // type-wrapper form
+  description: JSON.Lazy<string> = ""; // type-wrapper form
+  files: string[] = []; // arrays parse eagerly
 }
 ```
 
 - **`@lazy`** — a bare decorator on the field.
 - **`JSON.Lazy<T>`** — a transparent type alias (`type Lazy<T> = T`), so the field is still typed and used as a plain `T`.
 
+Array-typed fields, including `JSON.Arr` fields, are parsed eagerly even when marked `@lazy` or `JSON.Lazy<T>` or included in a class-wide lazy mode. Dynamic `JSON.Arr` elements retain their separate deferred behavior.
+
 ```ts
 const json =
-  '{"name":"x","owner":{"id":5,"login":"ada"},"files":["a.ts","b.ts"]}';
+  '{"name":"x","owner":{"id":5,"login":"ada"},"description":"hello","files":["a.ts","b.ts"]}';
 
 const repo = JSON.parse<Repo>(json);
 repo.name; // "x"      — parsed eagerly
 repo.owner.id; // 5    — owner parsed now (on first read), then cached
-// repo.files is never read here -> never parsed
+// repo.description is never read here -> never parsed
 
 // An untouched object round-trips by copying its original bytes:
 JSON.stringify(JSON.parse<Repo>(json)); // === json
@@ -46,20 +49,21 @@ JSON.stringify(JSON.parse<Repo>(json)); // === json
 Set a default for a whole class with the `@json` config object, and override individual fields with `@eager`:
 
 ```ts
-@json({ lazy: "auto" }) // "none" (default) | "auto" | "all"
+@json({ lazy: "auto" }) // "none" (default) | "auto" | "all" | "strategic"
 class Doc {
   id: i32 = 0; // auto: cheap -> stays eager
   title: string = ""; // auto: deferred
-  tags: string[] = []; // auto: deferred
+  tags: string[] = []; // arrays remain eager
   @eager hot: string = ""; // forced eager
 }
 ```
 
 - **`none`** *(default)* — only fields with an explicit marker are deferred.
-- **`auto`** — defer the expensive-to-parse fields (strings, arrays, maps/sets, `JSON.Value`/`Obj`/`Raw`, non-trivial nested structs) and keep cheap ones eager (primitives, enums, `Date`, tiny all-scalar structs).
-- **`all`** — defer every serialized field. Best for proxy / passthrough.
+- **`auto`** — defer the expensive-to-parse fields (strings, maps/sets, `JSON.Value`/`Obj`/`Raw`, non-trivial nested structs) and keep cheap ones and arrays eager.
+- **`all`** — defer every supported serialized field; array-typed fields remain eager. Best for proxy / passthrough.
+- **`strategic`** — specialize supported fields per visible parse site using their estimated access patterns. Guaranteed reads are eager; other reads use compile-time cost estimates.
 
-Precedence: explicit `@lazy` / `JSON.Lazy<T>` always wins, then `@eager`, then the class mode. `@omit` fields are never affected.
+For non-array fields, precedence is explicit `@lazy` / `JSON.Lazy<T>`, then `@eager`, then the class mode. `@omit` fields are never affected.
 
 ## Interactions
 

@@ -35,8 +35,9 @@ class Vec3 { x: f64 = 0; y: f64 = 0; z: f64 = 0; }
 Sets a class-wide [lazy](../guide/lazy-fields) default:
 
 - `"none"` *(default)* — every field eager.
-- `"auto"` — defer the expensive-to-parse fields (strings, arrays, maps, nested structs), keep cheap ones (primitives, enums, `Date`) eager.
-- `"all"` — defer every field.
+- `"auto"` — defer the expensive-to-parse fields (strings, maps, nested structs), keep cheap ones (primitives, enums, `Date`) and array-typed fields eager.
+- `"all"` — defer every supported field; array-typed fields, including `JSON.Arr`, remain eager. Dynamic array elements may still be deferred.
+- `"strategic"` — use visible field accesses at each parse site to choose which supported fields to parse eagerly.
 
 ```ts ignore
 @json({ lazy: "auto" })

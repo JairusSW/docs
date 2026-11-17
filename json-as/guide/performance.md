@@ -95,6 +95,6 @@ The [complete 2.1 chart set](https://github.com/JairusSW/json-as/tree/docs/chart
 
 For parsing, GB/s counts input UTF-8 bytes; for serialization, it counts output bytes. Native owning models, dynamic deferred values, and partial field reads are distinct workloads. Compare matching series and phases.
 
-Use `@json({ nolazy })` with no explicit lazy fields when measuring complete eager materialization against another native-model parser. A partial-read specialization benchmark should instead report which fields it observes. Regular serialization creates fresh output unless an eligible destination is explicitly supplied; it does not cache the full JSON string.
+Use `@json({ nolazy })` when measuring complete eager materialization against another native-model parser. A partial-read specialization benchmark should instead report which fields it observes. Regular serialization creates fresh output unless an eligible destination is explicitly supplied; it does not cache the full JSON string.
 
 From the repository, `npm run bench:all` runs the benchmark groups and `npm run charts:build` renders captured results. Runtime comparisons use `npm run bench:runtimes`. Timing runs on a shared machine must acquire its benchmark lock; chart rendering alone is not a throughput measurement.

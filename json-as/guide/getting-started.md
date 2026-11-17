@@ -76,7 +76,7 @@ JSON.stringify(new Vec3()); // '{"x":0.0,"y":0.0,"z":0.0}'
 
 `JSON.parse<T>` needs the target type so the transform knows which generated parser to call. `JSON.stringify` infers it from the argument.
 
-## Access specialization in 2.1
+## Lazy parsing in 2.1
 
 Ordinary `@json` classes use compile-time access analysis. A local parse result that reads only some fields can use a reader that skips decoding the others. If all fields are needed, the object escapes, or the analysis is uncertain, observable fields remain eager. Whole-object serialization counts as observing its fields.
 

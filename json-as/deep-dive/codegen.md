@@ -13,11 +13,11 @@ The single most important thing about `json-as` is that it isn't a parser you ca
 
 Because this happens at build time against the concrete type, there's no runtime reflection, no field lookup by name, and no generic value tree to walk. Each type gets straight-line, monomorphized code. You can see it for yourself with [`JSON_WRITE`](../reference/customization#json-write-and-json-debug).
 
-## Parse-site specialization
+## Lazy parsing plans
 
-In 2.1, ordinary classes can receive compile-time reader plans at visible `JSON.parse<T>` calls. Plans identify supported fields proven unnecessary to the program. The reader scans their JSON values without constructing the typed values. Full-read sites keep eager fields, with no lazy slots or getter checks introduced by ordinary specialization.
+In 2.1, lazy parsing can generate compile-time reader plans at visible `JSON.parse<T>` calls. Plans identify supported fields proven unnecessary to the program. The reader scans their JSON values without constructing the typed values. Full-read sites keep eager fields, with no lazy slots or getter checks introduced by lazy parsing.
 
-This analysis is conservative: escaping values, unresolved bindings, effects, generic uncertainty, or exhausted analysis budgets retain eager handling. Whole-object serialization observes ordinary fields. `@json({ nolazy })` disables automatic specialization for the class and its descendants.
+This analysis is conservative: escaping values, unresolved bindings, effects, generic uncertainty, or exhausted analysis budgets retain eager handling. Whole-object serialization observes its emitted fields. `@json({ nolazy })` disables automatic specialization for the class and its descendants.
 
 Whole-object serialization observes the emitted fields, so their values remain available. Lazy parsing has no deferred field representation. See [Lazy parsing](../guide/lazy-fields).
 

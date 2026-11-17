@@ -1,10 +1,10 @@
 # Runtime Behavior
 
-A few internals worth knowing about — none are required for everyday use.
+Use [`JSON.parse`, `JSON.stringify`, and `JSON.validate`](./json-api) in application code. The details below explain ownership and nested calls; generated helpers are internal.
 
 ## The shared serialization buffer
 
-`JSON.stringify` writes into a single shared, growable byte buffer (`bs`) to avoid intermediate concatenations, then returns an owning output string. Fresh serialization still allocates its result; eligible explicit output destinations can reuse storage. Do not treat the internal scratch buffer as public storage. This is why serialization is allocation-light: the buffer is reused across calls and only grows when an output needs more room.
+`JSON.stringify` writes into a single shared, growable byte buffer (`bs`) to avoid intermediate concatenations, then returns an owning output string. Result storage may allocate; eligible explicit output destinations can reuse it, and constant results can use static strings. Do not treat the internal scratch buffer as public storage. This is why serialization is allocation-light: the buffer is reused across calls and only grows when an output needs more room.
 
 Typed string fields receive their decoded values, including copies for unescaped strings. Dynamic values can retain source ranges instead. Lazy parsing of typed classes scans unused fields without saving those ranges.
 

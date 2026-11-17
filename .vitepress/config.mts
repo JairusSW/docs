@@ -102,6 +102,7 @@ export default defineConfig({
           text: "Reference",
           collapsed: false,
           items: [
+            { text: "JSON API", link: "/json-as/reference/json-api" },
             { text: "Decorators", link: "/json-as/reference/decorators" },
             { text: "Dynamic Types", link: "/json-as/reference/dynamic-types" },
             { text: "Configuration", link: "/json-as/reference/customization" },

@@ -21,6 +21,12 @@ p.y; // 4
 
 Give fields a default (`x: i32 = 0`) or mark them definitely-assigned (`x!: i32`). A default is used when the key is missing from the input.
 
+## Lazy parsing is the default
+
+`@json`, `@json({ lazy })`, and `@json({ lazy: true })` select the same strategy. Local parse sites can skip decoding fields proven unused. Full reads and uncertain uses keep eager behavior; whole-object serialization retains every field it emits.
+
+Use `@json({ nolazy })` or `@json({ lazy: false })` for an eager class and its descendants. There are no field-level lazy markers or deferred getters. See [Lazy parsing](./lazy-fields) and the [JSON API](../reference/json-api).
+
 ## Nested classes and arrays
 
 Fields can be other `@json` classes, arrays of them, and arrays of primitives — nesting works to any depth.

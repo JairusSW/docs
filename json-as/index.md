@@ -20,7 +20,7 @@ function readX(input: string): f32 {
 }
 ```
 
-In 2.1, visible parse sites can skip decoding fields proven unused. Here, the reader can scan past `y` and `label` while decoding `x`. Full reads and uncertain uses retain eager behavior. This optimization creates no lazy getters or saved source ranges for ordinary fields.
+Lazy parsing is enabled by default in 2.1. Visible parse sites can skip decoding fields proven unused. Here, the reader can scan past `y` and `label` while decoding `x`. Full reads and uncertain uses retain eager behavior. This optimization creates no lazy getters or saved source ranges for ordinary fields.
 
 ::: info Version
 These docs cover 2.1.0. For installation before its npm publication, use the [packed-source instructions](./guide/getting-started#trying-210-before-publication). The [upgrade guide](./guide/upgrading-to-2-1) covers the changes from 2.0.
@@ -38,6 +38,8 @@ These docs cover 2.1.0. For installation before its npm publication, use the [pa
 - [Performance](./guide/performance) — 2.1 charts and measurement conditions.
 
 ## Reference
+
+- [JSON API](./reference/json-api): `parse`, `stringify`, and `validate`.
 
 - [Decorators](./reference/decorators)
 - [Dynamic types](./reference/dynamic-types): `JSON.Value`, `JSON.Obj`, `JSON.Arr`, and `JSON.Raw`.

@@ -24,6 +24,26 @@ JSON_USE_FAST_PATH=0 asc assembly/index.ts --transform json-as
 
 Disabling it removes the generated fast paths; it does not disable strict checking when `JSON_STRICT=true`.
 
+## `JSON_ACCESS_SPECIALIZATION`
+
+Enabled by default. At eligible visible `JSON.parse<T>` calls, decode needed fields and scan past proven-unused supported fields. Full reads, escapes, effects, uncertain bindings, and analysis limits retain conservative eager behavior. Ordinary specialization adds no deferred slots or getters.
+
+```bash
+JSON_ACCESS_SPECIALIZATION=false asc assembly/index.ts --transform json-as
+```
+
+Use `@json({ nolazy })` to opt out for one class and its descendants. This flag is independent of strictness and fast-reader generation.
+
+## `JSON_STRATEGIC_LAZINESS`
+
+Controls eager-read planning for deferred fields. With no override, classes marked `@json({ lazy: "strategic" })` use the strategic pass. Set `true` to also apply that analysis to existing lazy declarations, or `false` to disable strategic planning and retain their deferred behavior.
+
+```bash
+JSON_STRATEGIC_LAZINESS=false asc assembly/index.ts --transform json-as
+```
+
+This does not disable ordinary access specialization. Explicit `@lazy` and `JSON.Lazy<T>` remain deferred mechanisms. Array-typed fields remain eager.
+
 ## `JSON_STRICT`
 
 Defaults to false (compatibility parsing). Set exactly `true` to enable checked RFC 8259 parsing. Strict fresh and reused destinations reject incompatible typed-field value kinds consistently. Compatibility mode is intended for known, correctly typed JSON; use strict mode when validating input is required.
@@ -46,7 +66,7 @@ This changes failure reporting, **not validation policy**. It avoids constructin
 
 ## `JSON_CACHE`
 
-Experimental interned-string serialization cache. Off by default. `true` enables the default 1 MiB size; a numeric value selects bytes. Units distinguish bits (`b`) from bytes (`B`).
+Experimental internal string-cache API. Regular `JSON.stringify` does not use it, and enabling it does not accelerate ordinary serialization. Off by default. `true` enables the default 1 MiB size; a numeric value selects bytes. Units distinguish bits (`b`) from bytes (`B`).
 
 ~~~bash
 JSON_CACHE=1048576 asc assembly/index.ts --transform json-as # exactly 1 MiB
@@ -55,7 +75,7 @@ JSON_CACHE=1mb asc assembly/index.ts --transform json-as     # 125,000 bytes
 JSON_CACHE=false asc assembly/index.ts --transform json-as  # off
 ~~~
 
-Benchmark with caching disabled when comparing fresh serialization work.
+Keep it disabled unless you use the internal cache API explicitly.
 
 ## `JSON_WRITE` and `JSON_DEBUG`
 
@@ -65,7 +85,7 @@ Write the transformed source for a selected file:
 JSON_WRITE=assembly/index.ts asc assembly/index.ts --transform json-as
 ~~~
 
-The output is `assembly/index.ts.tmp.ts`. Use `JSON_DEBUG=true` for transform debug output; `DEBUG=true` is not the json-as flag.
+The output is `assembly/index.ts.tmp.ts`. Use `JSON_DEBUG=1` for transform debug output; `DEBUG=true` is not the json-as flag.
 
 ## In `asconfig.json`
 

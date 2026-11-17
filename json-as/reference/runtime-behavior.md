@@ -4,9 +4,9 @@ A few internals worth knowing about — none are required for everyday use.
 
 ## The shared serialization buffer
 
-`JSON.stringify` writes into a single shared, growable byte buffer (`bs`) rather than allocating per call, then returns an output string. Do not treat the internal scratch buffer as public storage. This is why serialization is allocation-light: the buffer is reused across calls and only grows when an output needs more room.
+`JSON.stringify` writes into a single shared, growable byte buffer (`bs`) to avoid intermediate concatenations, then returns an owning output string. Fresh serialization still allocates its result; eligible explicit output destinations can reuse storage. Do not treat the internal scratch buffer as public storage. This is why serialization is allocation-light: the buffer is reused across calls and only grows when an output needs more room.
 
-Deserialization similarly uses scratch slices that point into the source string where possible, copying into fields only when needed (e.g. escaped strings).
+Typed string fields receive their decoded values, including copies for unescaped strings. Explicit deferred fields and dynamic values can retain source ranges instead. Ordinary access specialization scans unused fields without saving those ranges.
 
 ## `JSON.internal`
 

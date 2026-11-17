@@ -14,20 +14,24 @@ npm install json-as
 npm install --save-dev assemblyscript@^0.28.18
 ~~~
 
-These docs target the **2.0.0 candidate**; npm currently serves 1.6.3. Until 2.0 is published, build and pack the candidate repository, then install its tarball:
+The package declares AssemblyScript `^0.28.18` as a peer dependency and bundles its formatter sources. npm and pnpm consumers do not need to install `xjb-as` directly or change hoisting settings.
 
-~~~bash
+### Trying 2.1.0 before publication
+
+These docs describe 2.1.0. Before that version is published to npm, install a tarball built from the 2.1 checkout:
+
+```bash
 # In the json-as checkout:
 npm ci
 npm run build:transform
 npm pack
 
-# In your consumer:
-npm install /absolute/path/to/json-as/json-as-2.0.0.tgz
-# Or: pnpm add /absolute/path/to/json-as/json-as-2.0.0.tgz
-~~~
+# In your application:
+npm install /absolute/path/to/json-as/json-as-2.1.0.tgz
+# Or: pnpm add /absolute/path/to/json-as/json-as-2.1.0.tgz
+```
 
-The 2.0 artifact declares AssemblyScript as a peer and bundles its formatter dependency. pnpm does not need a direct `xjb-as` dependency or a hoisting workaround. See [Upgrading to 2.0](./upgrading-to-2).
+After publication, select the release with `npm install json-as@2.1.0`.
 
 ## Enabling the transform
 
@@ -71,6 +75,12 @@ JSON.stringify(new Vec3()); // '{"x":0.0,"y":0.0,"z":0.0}'
 ```
 
 `JSON.parse<T>` needs the target type so the transform knows which generated parser to call. `JSON.stringify` infers it from the argument.
+
+## Access specialization in 2.1
+
+Ordinary `@json` classes use compile-time access analysis. A local parse result that reads only some fields can use a reader that skips decoding the others. If all fields are needed, the object escapes, or the analysis is uncertain, observable fields remain eager. Whole-object serialization counts as observing its fields.
+
+Use `@json({ nolazy })` for an eager class and its descendants, including benchmark controls. Use explicit `@lazy` or `JSON.Lazy<T>` when you want deferred materialization instead of permanent skipping. See [Access specialization and lazy fields](./lazy-fields).
 
 ## What `@json` generates
 

@@ -76,7 +76,8 @@ export default defineConfig({
           items: [
             { text: "Overview", link: "/json-as/" },
             { text: "Getting Started", link: "/json-as/guide/getting-started" },
-            { text: "Upgrading to 2.0", link: "/json-as/guide/upgrading-to-2" },
+            { text: "Upgrading to 2.1", link: "/json-as/guide/upgrading-to-2-1" },
+            { text: "Upgrading from 1.x", link: "/json-as/guide/upgrading-to-2" },
           ],
         },
         {
@@ -93,7 +94,7 @@ export default defineConfig({
               text: "Built-in Subclasses",
               link: "/json-as/guide/built-in-subclasses",
             },
-            { text: "Lazy Fields", link: "/json-as/guide/lazy-fields" },
+            { text: "Access & Lazy Fields", link: "/json-as/guide/lazy-fields" },
             { text: "Performance", link: "/json-as/guide/performance" },
           ],
         },

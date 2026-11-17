@@ -1,63 +1,56 @@
-# json-as
+# json-as 2.1
 
-::: info 2.0 release candidate
-These docs describe the upcoming 2.0.0 API. npm currently publishes 1.6.3. See [Upgrading to 2.0](./guide/upgrading-to-2) for the candidate installation and behavior changes.
-:::
+Type-safe JSON for [AssemblyScript](https://www.assemblyscript.org/), compiled for your models.
 
-Fast, type-safe JSON for [AssemblyScript](https://www.assemblyscript.org/).
-
-[GitHub](https://github.com/JairusSW/json-as) · [npm](https://www.npmjs.com/package/json-as) — `npm install json-as`
-
-`json-as` is a compiler **transform**: mark a class `@json` and it generates specialized serialize/deserialize code at build time. No runtime reflection, no hand-written schemas — just `JSON.parse<T>` and `JSON.stringify`, reaching multi-GB/s throughput with SIMD/SWAR scanning.
+Mark a class with `@json`, enable the compiler transform, and use `JSON.parse<T>` and `JSON.stringify`. The transform generates readers and writers at build time; your application needs no runtime schema or reflection.
 
 ```ts
 import { JSON } from "json-as";
 
 @json
-class Vec3 {
+class Point {
   x: f32 = 0;
   y: f32 = 0;
-  z: f32 = 0;
+  label: string = "";
 }
 
-const v = JSON.parse<Vec3>('{"x":1.5,"y":2.5,"z":3.5}');
-JSON.stringify(v); // '{"x":1.5,"y":2.5,"z":3.5}'
+function readX(input: string): f32 {
+  const point = JSON.parse<Point>(input);
+  return point.x;
+}
 ```
 
-## Highlights
+In 2.1, visible parse sites can skip decoding fields proven unused. Here, the reader can scan past `y` and `label` while decoding `x`. Full reads and uncertain uses retain eager behavior. This optimization creates no lazy getters or saved source ranges for ordinary fields.
 
-- **Typed** — `JSON.parse<T>` / `JSON.stringify` over your own `@json` classes, nested to any depth.
-- **Batteries included** — strings, all number types, `bool`, `Date`, arrays, `Map`, `Set`, typed arrays, `ArrayBuffer`.
-- **Dynamic when you need it** — `JSON.Value`, `JSON.Obj`, `JSON.Arr`, and `JSON.Raw` for unknown or open-ended shapes.
-- **Lazy fields** — defer parsing of fields you rarely read; untouched fields pass through their raw bytes on serialize.
-- **Custom formats** — `@serializer` / `@deserializer` for compact or bespoke wire formats.
-- **Fast** — three interchangeable scanning modes (SWAR, SIMD, NAIVE) selected at build time.
+::: info Version
+These docs cover 2.1.0. For installation before its npm publication, use the [packed-source instructions](./guide/getting-started#trying-210-before-publication). The [upgrade guide](./guide/upgrading-to-2-1) covers the changes from 2.0.
+:::
 
-## Guide
+## Start here
 
-- [Getting Started](./guide/getting-started) — install, enable the transform, first round-trip
-- [Upgrading to 2.0](./guide/upgrading-to-2) — reuse, numeric conversion, native subclasses, and packaging
-- [Basic Usage](./guide/basic-usage) — fields, nesting, aliases, optional fields, nullability
-- [Built-in Types](./guide/built-in-types) — dates, collections, typed arrays
-- [Custom Serialization](./guide/custom-serialization) — `@serializer` / `@deserializer`
-- [Built-in Subclasses](./guide/built-in-subclasses) — subclassing `Array`, `Map`, typed arrays
-- [Lazy Fields](./guide/lazy-fields) — on-demand field parsing
-- [Performance](./guide/performance) — modes, the fast path, and benchmarks
+- [Getting started](./guide/getting-started) — installation, compiler setup, and a first round-trip.
+- [Upgrading to 2.1](./guide/upgrading-to-2-1) — default access specialization, eager controls, and deferred serialization.
+- [Basic usage](./guide/basic-usage) — fields, aliases, defaults, nullability, and reuse.
+- [Built-in types](./guide/built-in-types) — strings, numbers, dates, arrays, maps, sets, and buffers.
+- [Access specialization and lazy fields](./guide/lazy-fields) — choose between skipping, eager parsing, and deferred materialization.
+- [Custom serialization](./guide/custom-serialization) — custom wire formats.
+- [Built-in subclasses](./guide/built-in-subclasses) — native collection semantics.
+- [Performance](./guide/performance) — 2.1 charts and measurement conditions.
 
 ## Reference
 
-- [Decorators](./reference/decorators) — every decorator in one place
-- [Dynamic Types](./reference/dynamic-types) — `JSON.Value` / `JSON.Obj` / `JSON.Arr` / `JSON.Raw`
-- [Configuration](./reference/customization) — build-time `JSON_*` environment variables
-- [Runtime Behavior](./reference/runtime-behavior) — the shared buffer, `JSON.internal`, `JSON.Memory`
+- [Decorators](./reference/decorators)
+- [Dynamic types](./reference/dynamic-types): `JSON.Value`, `JSON.Obj`, `JSON.Arr`, and `JSON.Raw`.
+- [Configuration](./reference/customization): compile-time options.
+- [Runtime behavior](./reference/runtime-behavior): output ownership, reuse, and nested operations.
 
-## Deep Dive
+## Implementation
 
-How the interesting parts actually work:
+- [Generated readers and writers](./deep-dive/codegen)
+- [SWAR and SIMD scanning](./deep-dive/scanning)
+- [Packed lazy slots](./deep-dive/lazy-slot)
+- [The serialization buffer](./deep-dive/buffer)
 
-- [Generated Code & the Fast Path](./deep-dive/codegen) — what `@json` compiles to
-- [SWAR & SIMD Scanning](./deep-dive/scanning) — finding structure many lanes at a time
-- [The Lazy Slot](./deep-dive/lazy-slot) — the packed `u64` behind lazy fields
-- [The Serialization Buffer](./deep-dive/buffer) — zero-copy, zero-alloc round-trips
+Upgrading from 1.x? Read the [2.0 migration notes](./guide/upgrading-to-2) too.
 
-Testing your AssemblyScript too? See [as-test](/as-test/).
+[GitHub](https://github.com/JairusSW/json-as) · [npm](https://www.npmjs.com/package/json-as) · [MPL-2.0 license](https://github.com/JairusSW/json-as/blob/main/LICENSE)

@@ -1,10 +1,10 @@
 # Upgrading to 2.0
 
-These docs describe the **2.0.0 release candidate**. The latest published npm version is still 1.6.3; the planned 1.7.0 release was never published. Until 2.0 is published, use a packed candidate from the repository to try these APIs.
+These notes cover the behavior changes from 1.x to 2.0, retained in 2.1. For the new default access specialization and deferred serialization behavior, continue with [Upgrading to 2.1](./upgrading-to-2-1). The planned 1.7.0 release was never published; its changes shipped in 2.0.
 
 ## Licensing
 
-The 2.0 candidate's project code is licensed under the **Mozilla Public License 2.0**, with the SPDX identifier `MPL-2.0`. Source files carry the license notice and copyright information. See the [full license](https://github.com/JairusSW/json-as/blob/main/LICENSE) and [third-party notices](https://github.com/JairusSW/json-as/blob/main/NOTICE); bundled dependencies and vendored helpers retain their own licenses.
+Project code is licensed under the **Mozilla Public License 2.0**, with the SPDX identifier `MPL-2.0`. Source files carry the license notice and copyright information. See the [full license](https://github.com/JairusSW/json-as/blob/main/LICENSE) and [third-party notices](https://github.com/JairusSW/json-as/blob/main/NOTICE); bundled dependencies and vendored helpers retain their own licenses.
 
 For contributors, `npm run license:check` checks source notices. A dedicated CI job and the `prepublishOnly` lifecycle enforce this check. Non-code configuration and data do not need headers or sidecars. The transform build preserves headers in its generated output.
 

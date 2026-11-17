@@ -1,10 +1,10 @@
 # The Serialization Buffer
 
-`JSON.stringify` is allocation-light not by accident but by design: every serialize writes into one shared, reused byte buffer. This page explains how that buffer (`bs`) works and why round-tripping can hit **zero allocation** in steady state.
+`JSON.stringify` is allocation-light not by accident but by design: every serialize writes into one shared, reused byte buffer. This page explains how that buffer (`bs`) works and how scratch-buffer reuse reduces allocation while keeping returned strings independently owned.
 
 ## One buffer, reused
 
-There's a single module-level output buffer. `JSON.stringify` doesn't allocate a fresh string and append to it — it writes bytes into this buffer at a moving `offset`, then returns the output string. Because the buffer persists across calls, the common case allocates nothing for the buffer itself; it only ever *grows*, never churns.
+There's a single module-level output buffer. `JSON.stringify` doesn't allocate a fresh string and append to it — it writes bytes into this buffer at a moving `offset`, then produces an owning output string. Scratch capacity can persist across calls, but a fresh result still needs output storage unless an eligible output destination is supplied.
 
 The structural bytes a serializer writes (keys, `{`, `,`) are compile-time constants emitted as packed stores — see [Generated Code](./codegen#serializing) — so the buffer just receives wide writes.
 
@@ -21,7 +21,7 @@ Growth is **geometric** (≈2×, with a minimum chunk), so a long serialize amor
 Because the upfront estimate normally covers everything, fixed-size structural writes (keys, commas) can skip their own bounds check and rely on it. Code paths where the estimate *can't* be trusted — lazy passthrough, which copies an arbitrary slice — must `ensureSize` before the writes that follow, or a large value can overrun what the estimate reserved.
 :::
 
-## Reuse: zero-alloc round-trips
+## Reusing destinations
 
 Both entry points take an optional target to write *into*:
 

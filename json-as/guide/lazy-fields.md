@@ -1,4 +1,4 @@
-# Lazy Fields
+# Access Specialization and Lazy Fields
 
 A **lazy** field defers parsing. Instead of materializing the value during `JSON.parse`, `json-as` records the field's raw JSON slice and parses it only on first access. A field you never read is never parsed; on serialize, an untouched field's original bytes pass straight through. Access is fully transparent — a lazy field reads and writes exactly like a normal one.
 
@@ -18,8 +18,10 @@ class Point {
   name: string = "";
 }
 
-const point = JSON.parse<Point>(input);
-const x = point.x; // y and name can be skipped at this parse site
+function readX(input: string): f32 {
+  const point = JSON.parse<Point>(input);
+  return point.x; // y and name can be skipped at this local parse site
+}
 ```
 
 This produces an ordinary object with no lazy slots or getters. When all fields
@@ -31,9 +33,21 @@ preserved. Direct array-typed fields remain eager. Set
 Explicit lazy fields, described below, remain available when a caller needs a
 value to be materialized on first access.
 
+## Eager controls
+
+`@json({ lazy })` is shorthand for the ordinary default access strategy. It does not turn every field into a deferred accessor. `@json({ nolazy })` or `@json({ lazy: false })` disables automatic access specialization for a class and its descendants. Explicit field markers are separate; leave them out of fully eager benchmark models.
+
+```ts
+@json({ nolazy })
+class EagerPoint {
+  x: f32 = 0;
+  y: f32 = 0;
+}
+```
+
 ## Marking a field
 
-Three equivalent ways, pick whichever reads best:
+Use a field decorator or a type wrapper:
 
 ```ts
 import { JSON } from "json-as";
@@ -67,8 +81,9 @@ repo.name; // "x"      — parsed eagerly
 repo.owner.id; // 5    — owner parsed now (on first read), then cached
 // repo.description is never read here -> never parsed
 
-// An untouched object round-trips by copying its original bytes:
-JSON.stringify(JSON.parse<Repo>(json)); // === json
+// Deferred fields can forward their original value ranges:
+JSON.stringify(JSON.parse<Repo>(json));
+// Eager fields are re-encoded; whole-document byte identity is not guaranteed.
 ```
 
 ## Class-level modes
@@ -91,6 +106,30 @@ class Doc {
 - **`strategic`** — specialize supported fields per visible parse site using their estimated access patterns. Guaranteed reads are eager; other reads use compile-time cost estimates.
 
 For non-array fields, precedence is explicit `@lazy` / `JSON.Lazy<T>`, then `@eager`, then the class mode. `@omit` fields are never affected.
+
+## Strategic parsing and serialization
+
+```ts
+@json({ lazy: "strategic" })
+class Response {
+  id: i32 = 0;
+  description: string = "";
+}
+
+function forward(input: string): string {
+  const response = JSON.parse<Response>(input);
+  if (response.id == 0) return "";
+  return JSON.stringify(response);
+}
+```
+
+The visible read makes `id` eager. An untouched deferred `description` can be copied from its original JSON range without decoding or escaping it again. Reads after this serialization do not pull decoding ahead of that output. json-as calls, including resolved import aliases, preserve the strategic plan; application-owned writers are handled conservatively.
+
+Once a field is materialized, serialization writes its current typed value. Assigning it replaces the saved range; mutating a materialized child is reflected in output. Untouched custom-codec values can forward without invoking either codec, while accessing or replacing them restores the typed codec path. Omission predicates that inspect a field can require materialization.
+
+Forwarding retains fields in the output; it does not omit them. The writer still produces an owning output string on each call. Raw source formatting may survive for deferred values, so do not require byte-identical output to eager re-encoding.
+
+Ordinary access specialization has no source ranges. Whole-object serialization of an ordinary class keeps its fields observable and eager.
 
 ## Interactions
 

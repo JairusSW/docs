@@ -13,6 +13,14 @@ The single most important thing about `json-as` is that it isn't a parser you ca
 
 Because this happens at build time against the concrete type, there's no runtime reflection, no field lookup by name, and no generic value tree to walk. Each type gets straight-line, monomorphized code. You can see it for yourself with [`JSON_WRITE`](../reference/customization#json-write-and-json-debug).
 
+## Parse-site specialization
+
+In 2.1, ordinary classes can receive compile-time reader plans at visible `JSON.parse<T>` calls. Plans identify supported fields proven unnecessary to the program. The reader scans their JSON values without constructing the typed values. Full-read sites keep eager fields, with no lazy slots or getter checks introduced by ordinary specialization.
+
+This analysis is conservative: escaping values, unresolved bindings, effects, generic uncertainty, or exhausted analysis budgets retain eager handling. Whole-object serialization observes ordinary fields. `@json({ nolazy })` disables automatic specialization for the class and its descendants.
+
+Explicit strategic classes use a different representation: deferred slots plus parse-site eager-read plans. Their writers can forward untouched source ranges, while ordinary skipped fields have no saved source to forward. See [Access specialization and lazy fields](../guide/lazy-fields).
+
 ## Serializing
 
 `__SERIALIZE` writes directly into a shared output buffer (see [The Serialization Buffer](./buffer)). Structural text — `{`, the keys, `:`, `,`, `}` — is known at compile time, so it's emitted as **precomputed byte constants** (often a single packed `v128`/`u64` store per key) rather than character by character. Only the field *values* are computed at runtime.

@@ -1,56 +1,38 @@
 # Upgrading to 2.1
 
-2.1 keeps the `JSON.parse<T>` and `JSON.stringify` APIs. Its main change is compile-time specialization of visible parse sites, alongside generated serialization and runtime optimizations.
+2.1 keeps the public `JSON.parse<T>`, `JSON.stringify`, and `JSON.validate` signatures. Lazy parsing now has a single meaning: compile-time access specialization.
 
-For installation, see [Getting started](./getting-started). If upgrading from 1.x, also read the [2.0 migration notes](./upgrading-to-2).
-
-## Ordinary classes specialize by default
-
-```ts
-import { JSON } from "json-as";
-
-@json
-class Response {
-  id: i32 = 0;
-  title: string = "";
-  body: string = "";
-}
-
-function title(input: string): string {
-  const response = JSON.parse<Response>(input);
-  return response.title;
-}
-```
-
-At eligible local parse sites, the transform decodes needed fields and scans past proven-unused fields. Skipped fields have no deferred getter or saved source range. Full reads retain the eager representation. Returned objects, unknown consumers, whole-object serialization, uncertain control flow, and analysis limits require conservative handling. Observable initializer and custom-codec effects must still run.
-
-This is a compile-time optimization, not a runtime promise that every partial read will specialize. Generic or effectful code may keep the ordinary reader.
-
-## Eager controls and shorthand
+## One lazy API
 
 | Declaration | Behavior |
 | --- | --- |
-| `@json` or `@json({ lazy })` | Default access-based specialization; ordinary fields have no deferred storage. |
-| `@json({ nolazy })` or `@json({ lazy: false })` | Disable automatic access specialization for the class and its descendants. |
-| `@json({ lazy: "strategic" })` | Deferred fields with parse-site eager-read plans. |
-| `@lazy` or `JSON.Lazy<T>` on a field | Explicit deferred materialization for supported non-array types. |
+| `@json` | Default access specialization. |
+| `@json({ lazy })` or `@json({ lazy: true })` | Explicitly select the same default. |
+| `@json({ nolazy })` or `@json({ lazy: false })` | Eager parsing for this class and its descendants. |
 
-`lazy` and `nolazy` are ambient shorthand names; no import is needed. For an unambiguous eager benchmark model, use `{ nolazy }` without explicit lazy field markers. To disable ordinary specialization across a build, set `JSON_ACCESS_SPECIALIZATION=false`.
+Eligible local parse sites decode needed fields and scan past proven-unused supported fields. Full reads and uncertain or escaping values retain eager behavior. Initializer and codec side effects are preserved. There are no typed-field lazy slots, getters, or deferred materialization.
 
-## Deferred serialization
+## Remove deferred-field APIs
 
-Explicit lazy fields and strategic classes retain source ranges. `JSON.stringify` copies untouched deferred values from those ranges; it writes materialized or assigned values from their current typed state. Mutations through a materialized child are included, and omission decorators still apply.
+- Replace `JSON.Lazy<T>` with `T`.
+- Remove instance-field `@lazy` and `@eager` decorators.
+- Replace `lazy: "auto"`, `"all"`, `"none"`, or `"strategic"` with a boolean class choice.
+- Replace `JSON_ACCESS_SPECIALIZATION` and `JSON_STRATEGIC_LAZINESS` with `JSON_LAZY`. Set it to `false` for a build-wide eager control.
 
-A json-as serialization call preserves a strategic parse site's eager-read plan. A later field read does not require decoding that field before the first serialization. This is per-field forwarding, not a cache of the complete output string. Output remains an owning string, and untouched source formatting can differ from eager re-encoding.
+Retired class modes and field decorators produce migration errors. AssemblyScript's built-in module/static `@lazy` remains available.
 
-Ordinary field skipping has no source ranges to forward. Serializing an ordinary result whole therefore retains its observable fields rather than dropping unread fields from JSON output.
+Observable fields and their codecs now decode during parsing rather than on first access. Applications depending on deferred timing must adjust that expectation.
 
-## Arrays remain eager
+## Serialization and dynamic values
 
-Array-typed fields, including `JSON.Arr` fields, parse eagerly even with a lazy marker or class-wide lazy mode. This does not change deferred elements inside dynamic `JSON.Arr` values.
+Serializing a typed object whole observes its fields, so they are retained and encoded from current values. Assignments, nested mutations, omission predicates, and custom writers still apply. Typed serialization no longer forwards untouched saved source slices.
 
-## Configuration and performance
+Dynamic `JSON.Value`, `JSON.Obj`, `JSON.Arr`, and `JSON.Raw` retain their existing source-backed behavior. They remain available when the application explicitly wants dynamic or raw JSON.
 
-`JSON_ACCESS_SPECIALIZATION` controls ordinary field skipping. `JSON_STRATEGIC_LAZINESS` controls the separate strategic planning pass; disabling it does not disable ordinary specialization. Strictness, diagnostics, backend selection, and tier-down behavior remain separate settings.
+## Editors and benchmarks
 
-Compare [the 2.1 charts](./performance) using matching workloads and output policies. Fully materialized native structs, partial field reads, and source-forwarding dynamic values perform different work.
+Internal runtime helpers are not exported in the TypeScript namespace, so `JSON.` completion shows the public API and dynamic types. Generated AssemblyScript readers can still call internal helpers; optimized compiler tests cover that reachability.
+
+Use `{ nolazy }` when comparing complete eager materialization to another native-model parser. For a partial-read benchmark, report the observed fields. Historical deferred-field charts do not measure this consolidated strategy.
+
+See [Lazy parsing](./lazy-fields), [Configuration](../reference/customization), and [Getting started](./getting-started). Upgrading from 1.x also requires the [2.0 migration notes](./upgrading-to-2).

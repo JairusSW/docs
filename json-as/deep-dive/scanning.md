@@ -67,7 +67,7 @@ For a string with **no** escapes — the common case — the whole per-character
 - **clean** → emit `"` + one `memory.copy` + `"`, no scan,
 - **needs-escape** → the full scan-and-escape path above.
 
-AssemblyScript strings are immutable, so the class never goes stale — every re-serialize after the first reuses it, and a clean dynamic string round-trips at `memory.copy` speed. (A still-deferred lazy value goes further: it never materializes at all, streaming its original source bytes straight through. Typed struct `string` fields have nowhere to cache a class, so they always take the scan path.)
+AssemblyScript strings are immutable, so the class never goes stale — every re-serialize after the first reuses it, and a clean dynamic string round-trips at `memory.copy` speed. (A still-deferred dynamic value goes further: it never materializes at all, streaming its original source bytes straight through. Typed struct `string` fields have nowhere to cache a class, so they always take the scan path.)
 
 ## Same result, three speeds
 

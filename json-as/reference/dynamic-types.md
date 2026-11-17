@@ -78,7 +78,7 @@ const raw = JSON.parse<JSON.Raw>('{"x":1,  "y":2}');
 JSON.stringify(raw); // '{"x":1,  "y":2}'
 ~~~
 
-This is useful for forwarding an opaque value. Unlike a quoted `string`, Raw is emitted as JSON text. Also see [lazy fields](../guide/lazy-fields) for deferred typed access.
+This is useful for forwarding an opaque value. Unlike a quoted `string`, Raw is emitted as JSON text. Typed [lazy parsing](../guide/lazy-fields) instead specializes visible field reads at compile time.
 
 ## Public helpers and tags
 

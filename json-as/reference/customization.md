@@ -24,25 +24,15 @@ JSON_USE_FAST_PATH=0 asc assembly/index.ts --transform json-as
 
 Disabling it removes the generated fast paths; it does not disable strict checking when `JSON_STRICT=true`.
 
-## `JSON_ACCESS_SPECIALIZATION`
+## `JSON_LAZY`
 
-Enabled by default. At eligible visible `JSON.parse<T>` calls, decode needed fields and scan past proven-unused supported fields. Full reads, escapes, effects, uncertain bindings, and analysis limits retain conservative eager behavior. Ordinary specialization adds no deferred slots or getters.
-
-```bash
-JSON_ACCESS_SPECIALIZATION=false asc assembly/index.ts --transform json-as
-```
-
-Use `@json({ nolazy })` to opt out for one class and its descendants. This flag is independent of strictness and fast-reader generation.
-
-## `JSON_STRATEGIC_LAZINESS`
-
-Controls eager-read planning for deferred fields. With no override, classes marked `@json({ lazy: "strategic" })` use the strategic pass. Set `true` to also apply that analysis to existing lazy declarations, or `false` to disable strategic planning and retain their deferred behavior.
+Enabled by default. At eligible visible `JSON.parse<T>` calls, decode needed fields and scan past proven-unused supported fields. Full reads, serialization, escapes, effects, uncertain bindings, and analysis limits retain conservative eager behavior. No deferred slots or getters are generated.
 
 ```bash
-JSON_STRATEGIC_LAZINESS=false asc assembly/index.ts --transform json-as
+JSON_LAZY=false asc assembly/index.ts --transform json-as
 ```
 
-This does not disable ordinary access specialization. Explicit `@lazy` and `JSON.Lazy<T>` remain deferred mechanisms. Array-typed fields remain eager.
+Use `@json({ nolazy })` for a class and its descendants. This flag is independent of strictness and fast-reader generation. It replaces `JSON_ACCESS_SPECIALIZATION` and `JSON_STRATEGIC_LAZINESS`.
 
 ## `JSON_STRICT`
 

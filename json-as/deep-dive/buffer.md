@@ -13,12 +13,12 @@ The structural bytes a serializer writes (keys, `{`, `,`) are compile-time const
 Two operations manage capacity:
 
 - **`proposeSize(n)`** — called once at the top of a struct's serializer with a compile-time estimate of its output size, reserving roughly that much up front so most serializes never reallocate mid-write.
-- **`ensureSize(n)`** — called before a write whose size isn't known until runtime (a string value, a lazy passthrough). If the buffer would overflow, it grows.
+- **`ensureSize(n)`** — called before a write whose size isn't known until runtime (a string value, a dynamic source-range copy). If the buffer would overflow, it grows.
 
 Growth is **geometric** (≈2×, with a minimum chunk), so a long serialize amortizes to a small constant number of reallocations rather than one per field. The estimate just keeps the common case off the growth path entirely.
 
 ::: tip A subtlety the estimate hides
-Because the upfront estimate normally covers everything, fixed-size structural writes (keys, commas) can skip their own bounds check and rely on it. Code paths where the estimate *can't* be trusted — lazy passthrough, which copies an arbitrary slice — must `ensureSize` before the writes that follow, or a large value can overrun what the estimate reserved.
+Because the upfront estimate normally covers everything, fixed-size structural writes (keys, commas) can skip their own bounds check and rely on it. Code paths where the estimate *can't* be trusted — dynamic source forwarding, which copies an arbitrary slice — must `ensureSize` before the writes that follow, or a large value can overrun what the estimate reserved.
 :::
 
 ## Reusing destinations
@@ -32,7 +32,7 @@ Some steady-state schemas reach zero allocations, but that is not a universal AP
 
 ## Deserialize avoids copies too
 
-On the way in, the scanners work against the source string directly: a string field that contains no escapes is copied straight from the source into the field, skipping any scratch round-trip; only escaped strings take a decode detour through scratch space. (Lazy fields take this further — they don't copy at all until read; see [The Lazy Slot](./lazy-slot).)
+On the way in, the scanners work against the source string directly: a string field that contains no escapes is copied straight from the source into the field, skipping any scratch round-trip; only escaped strings take a decode detour through scratch space. Dynamic source-backed values can defer materialization; ordinary typed-field skipping retains no source ranges.
 
 ## Adaptive shrinking
 

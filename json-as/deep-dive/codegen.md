@@ -19,7 +19,7 @@ In 2.1, ordinary classes can receive compile-time reader plans at visible `JSON.
 
 This analysis is conservative: escaping values, unresolved bindings, effects, generic uncertainty, or exhausted analysis budgets retain eager handling. Whole-object serialization observes ordinary fields. `@json({ nolazy })` disables automatic specialization for the class and its descendants.
 
-Explicit strategic classes use a different representation: deferred slots plus parse-site eager-read plans. Their writers can forward untouched source ranges, while ordinary skipped fields have no saved source to forward. See [Access specialization and lazy fields](../guide/lazy-fields).
+Whole-object serialization observes the emitted fields, so their values remain available. Lazy parsing has no deferred field representation. See [Lazy parsing](../guide/lazy-fields).
 
 ## Serializing
 

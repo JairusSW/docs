@@ -94,7 +94,7 @@ export default defineConfig({
               text: "Built-in Subclasses",
               link: "/json-as/guide/built-in-subclasses",
             },
-            { text: "Access & Lazy Fields", link: "/json-as/guide/lazy-fields" },
+            { text: "Lazy Parsing", link: "/json-as/guide/lazy-fields" },
             { text: "Performance", link: "/json-as/guide/performance" },
           ],
         },
@@ -123,7 +123,7 @@ export default defineConfig({
               text: "SWAR & SIMD Scanning",
               link: "/json-as/deep-dive/scanning",
             },
-            { text: "The Lazy Slot", link: "/json-as/deep-dive/lazy-slot" },
+            { text: "Lazy Parsing Migration", link: "/json-as/deep-dive/lazy-slot" },
             {
               text: "The Serialization Buffer",
               link: "/json-as/deep-dive/buffer",

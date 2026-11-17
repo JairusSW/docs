@@ -1,6 +1,6 @@
 # Upgrading to 2.0
 
-These notes cover the behavior changes from 1.x to 2.0, retained in 2.1. For the new default access specialization and deferred serialization behavior, continue with [Upgrading to 2.1](./upgrading-to-2-1). The planned 1.7.0 release was never published; its changes shipped in 2.0.
+These notes cover the behavior changes from 1.x to 2.0, retained in 2.1. For the consolidated lazy parsing API, continue with [Upgrading to 2.1](./upgrading-to-2-1). The planned 1.7.0 release was never published; its changes shipped in 2.0.
 
 ## Licensing
 

@@ -34,16 +34,10 @@ class Vec3 { x: f64 = 0; y: f64 = 0; z: f64 = 0; }
 
 | Syntax | Effect |
 | --- | --- |
-| `@json` / `@json({ lazy })` / `@json({ lazy: true })` | Default compile-time access specialization, with no deferred storage for ordinary fields. |
-| `@json({ nolazy })` / `@json({ lazy: false })` | Disable automatic access specialization for this class and its descendants. |
-| `@json({ lazy: "none" })` | Defer only explicitly marked fields; ordinary access specialization remains enabled. |
-| `@json({ lazy: "auto" })` | Defer supported fields judged expensive; keep cheap fields and arrays eager. |
-| `@json({ lazy: "all" })` | Defer supported non-array fields. |
-| `@json({ lazy: "strategic" })` | Start with deferred fields and choose eager reads per visible parse site. |
+| `@json` / `@json({ lazy })` / `@json({ lazy: true })` | Access-based parsing (default). |
+| `@json({ nolazy })` / `@json({ lazy: false })` | Eager parsing for this class and its descendants. |
 
-The shorthand names `lazy` and `nolazy` are ambient. They do not need imports. For eager benchmark controls, use `{ nolazy }` and no explicit lazy fields. Array-typed fields remain eager in every mode; dynamic `JSON.Arr` elements retain their deferred behavior.
-
-See [Access specialization and lazy fields](../guide/lazy-fields) for read timing, source forwarding, and the distinction between skipping and deferring.
+Shorthand names are ambient. No field slots or deferred getters are generated. See [Lazy parsing](../guide/lazy-fields). String modes and instance-field lazy/eager decorators were removed.
 
 ## Field decorators
 
@@ -75,14 +69,6 @@ Mark a field optional for **deserialization**: the key may be absent from the in
 ```ts ignore
 @optional retweeted_status: Retweet | null = null; // key may be absent on parse
 ```
-
-### `@lazy`
-
-Defer this field: its raw JSON slice is stored at parse time and parsed only on first access. Equivalent to the `JSON.Lazy<T>` type wrapper. See [Lazy Fields](../guide/lazy-fields).
-
-### `@eager`
-
-Opt a single field out of a class-level `@json({ lazy })` default, forcing it eager.
 
 ## Method decorators
 

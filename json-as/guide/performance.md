@@ -77,17 +77,11 @@ Generated readers start at tier 1 on **each invocation**, then only tier down as
 
 Reuse can avoid allocations for eligible present members. It still restores omitted defaults and prevents shared writable storage from corrupting another field. Allocation depends on defaults, growth, ownership, and custom codecs; it is not guaranteed to be zero for every schema.
 
-## Lazy and dynamic work
+## Lazy parsing and dynamic work
 
-These routes can retain raw ranges or cached materializations. Parsing without reading deferred fields, forwarding unchanged JSON, and fully materializing native structs are different amounts of work.
+The published 17 November capture predates consolidation of lazy parsing. Its deferred-field Lazy series and dedicated lazy charts describe the retired implementation, not the new access strategy. Use the eager native-model series for those historical captures; new access-pattern comparisons require fresh measurements.
 
-<a href="https://raw.githubusercontent.com/JairusSW/json-as/refs/heads/docs/charts/v2.1.0/lazy-deserialize.svg"><img src="https://raw.githubusercontent.com/JairusSW/json-as/refs/heads/docs/charts/v2.1.0/lazy-deserialize.svg" alt="Lazy deserialization" loading="lazy" decoding="async"></a>
-
-<a href="https://raw.githubusercontent.com/JairusSW/json-as/refs/heads/docs/charts/v2.1.0/lazy-roundtrip.svg"><img src="https://raw.githubusercontent.com/JairusSW/json-as/refs/heads/docs/charts/v2.1.0/lazy-roundtrip.svg" alt="Lazy round trip" loading="lazy" decoding="async"></a>
-
-<a href="https://raw.githubusercontent.com/JairusSW/json-as/refs/heads/docs/charts/v2.1.0/lazy-serialize.svg"><img src="https://raw.githubusercontent.com/JairusSW/json-as/refs/heads/docs/charts/v2.1.0/lazy-serialize.svg" alt="Lazy serialization" loading="lazy" decoding="async"></a>
-
-<a href="https://raw.githubusercontent.com/JairusSW/json-as/refs/heads/docs/charts/v2.1.0/lazy-access-pattern.svg"><img src="https://raw.githubusercontent.com/JairusSW/json-as/refs/heads/docs/charts/v2.1.0/lazy-access-pattern.svg" alt="Lazy access patterns" loading="lazy" decoding="async"></a>
+Current lazy parsing is compile-time field selection. Dynamic `JSON.Obj` and `JSON.Arr` still have source-backed behavior, which performs different work from materializing native models.
 
 ## Running and inspecting benchmarks
 

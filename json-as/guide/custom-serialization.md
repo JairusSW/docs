@@ -65,6 +65,4 @@ Notice the serializer above calls `JSON.stringify(...)` and the deserializer cal
 
 The most common use is giving a subclass of a built-in container a compact representation — e.g. a `Uint8Array` as a hex string, an `Array<i32>` as CSV, or a `Map`/`Set` as tagged text. See [Built-in Subclasses](./built-in-subclasses) for how decorating a subclass works.
 
-::: warning Not combinable with lazy fields
-A class with a custom `@serializer`/`@deserializer` can't also use [lazy fields](./lazy-fields) — the custom methods replace the generated (de)serializer that the lazy slots rely on, so the transform reports an error. (A field whose *type* has a custom serializer is fine.)
-:::
+Default lazy parsing preserves observable custom-codec effects. Calls requiring a custom reader keep conservative decoding rather than skipping its effects. Typed fields no longer have a separate deferred representation.

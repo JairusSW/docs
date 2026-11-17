@@ -80,7 +80,7 @@ JSON.stringify(new Vec3()); // '{"x":0.0,"y":0.0,"z":0.0}'
 
 Ordinary `@json` classes use compile-time access analysis. A local parse result that reads only some fields can use a reader that skips decoding the others. If all fields are needed, the object escapes, or the analysis is uncertain, observable fields remain eager. Whole-object serialization counts as observing its fields.
 
-Use `@json({ nolazy })` for an eager class and its descendants, including benchmark controls. Use explicit `@lazy` or `JSON.Lazy<T>` when you want deferred materialization instead of permanent skipping. See [Access specialization and lazy fields](./lazy-fields).
+Use `@json({ nolazy })` for an eager class and its descendants, including benchmark controls. Lazy parsing introduces no deferred materialization. See [Lazy parsing](./lazy-fields).
 
 ## What `@json` generates
 
@@ -124,5 +124,5 @@ JSON_WRITE=assembly/index.ts asc assembly/index.ts --transform json-as
 
 - [Basic Usage](./basic-usage) — fields, nesting, optional fields, nullability
 - [Built-in Types](./built-in-types) — arrays, maps, sets, dates, typed arrays
-- [Lazy Fields](./lazy-fields) — defer parsing of fields you rarely read
+- [Lazy parsing](./lazy-fields) — compile-time field selection
 - [Decorators](../reference/decorators) — the full decorator reference

@@ -29,10 +29,10 @@ These docs cover 2.1.0. For installation before its npm publication, use the [pa
 ## Start here
 
 - [Getting started](./guide/getting-started) — installation, compiler setup, and a first round-trip.
-- [Upgrading to 2.1](./guide/upgrading-to-2-1) — default access specialization, eager controls, and deferred serialization.
+- [Upgrading to 2.1](./guide/upgrading-to-2-1) — one lazy API, eager controls, and migration from deferred fields.
 - [Basic usage](./guide/basic-usage) — fields, aliases, defaults, nullability, and reuse.
 - [Built-in types](./guide/built-in-types) — strings, numbers, dates, arrays, maps, sets, and buffers.
-- [Access specialization and lazy fields](./guide/lazy-fields) — choose between skipping, eager parsing, and deferred materialization.
+- [Lazy parsing](./guide/lazy-fields) — compile-time field selection and eager controls.
 - [Custom serialization](./guide/custom-serialization) — custom wire formats.
 - [Built-in subclasses](./guide/built-in-subclasses) — native collection semantics.
 - [Performance](./guide/performance) — 2.1 charts and measurement conditions.
@@ -48,7 +48,7 @@ These docs cover 2.1.0. For installation before its npm publication, use the [pa
 
 - [Generated readers and writers](./deep-dive/codegen)
 - [SWAR and SIMD scanning](./deep-dive/scanning)
-- [Packed lazy slots](./deep-dive/lazy-slot)
+- [Lazy parsing migration](./deep-dive/lazy-slot)
 - [The serialization buffer](./deep-dive/buffer)
 
 Upgrading from 1.x? Read the [2.0 migration notes](./guide/upgrading-to-2) too.

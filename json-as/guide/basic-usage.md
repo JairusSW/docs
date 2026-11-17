@@ -163,5 +163,5 @@ Always retain the returned value, since reuse is an optimization and a destinati
 ## Next steps
 
 - [Built-in Types](./built-in-types) — `Date`, maps, sets, typed arrays, and more
-- [Lazy Fields](./lazy-fields) — defer parsing of fields you rarely touch
+- [Lazy parsing](./lazy-fields) — decode only proven-needed fields
 - [Dynamic Types](../reference/dynamic-types) — `JSON.Value` / `JSON.Obj` for unknown shapes

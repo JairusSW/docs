@@ -5,7 +5,7 @@
 ## Installation
 
 ```bash
-npm install json-as
+npm install json-as@2.1.0
 ```
 
 `json-as` ships the runtime library and the transform together. Install the compiler in your application too:
@@ -16,22 +16,7 @@ npm install --save-dev assemblyscript@^0.28.18
 
 The package declares AssemblyScript `^0.28.18` as a peer dependency and bundles its formatter sources. npm and pnpm consumers do not need to install `xjb-as` directly or change hoisting settings.
 
-### Trying 2.1.0 before publication
-
-These docs describe 2.1.0. Before that version is published to npm, install a tarball built from the 2.1 checkout:
-
-```bash
-# In the json-as checkout:
-npm ci
-npm run build:transform
-npm pack
-
-# In your application:
-npm install /absolute/path/to/json-as/json-as-2.1.0.tgz
-# Or: pnpm add /absolute/path/to/json-as/json-as-2.1.0.tgz
-```
-
-After publication, select the release with `npm install json-as@2.1.0`.
+Already using json-as? See [Upgrading to 2.1](./upgrading-to-2-1).
 
 ## Enabling the transform
 
